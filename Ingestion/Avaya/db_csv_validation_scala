@@ -1,0 +1,245 @@
+//libraries
+import scala.util.control._
+import java.util.Properties
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions.{col,lower,when,length,concat,lit,trim}
+import org.apache.spark.sql.{DataFrame,Column}
+import org.apache.spark.sql.types.DataTypes
+import scala.collection.immutable.List
+
+val startTimeMillis = System.currentTimeMillis()
+
+
+def emptyStringsToNone(df: DataFrame): DataFrame = {
+  df.schema.foldLeft(df)(
+    (current, field) =>
+      field.dataType match {
+        case DataTypes.StringType =>
+          current.withColumn(
+            field.name,
+            when(length(col(field.name)) === 0, lit(null: String)).otherwise(col(field.name))
+          )
+        case _ => current
+      }
+  )
+} 
+
+def trimColumn(df: DataFrame, colName: String): DataFrame = {  
+  //Column col = new Column
+  var newDf = df.withColumn(colName, trim(col(colName)))
+  return newDf
+}
+
+def emptyStringsToNonePerCol(df: DataFrame, colName: String): DataFrame = {  
+  //Column col = new Column
+  var newDf = df.withColumn(colName, when(length(col(colName)) === 0, lit(null: String)).otherwise(col(colName)))
+  return newDf
+}
+
+ 
+//DB Connection String
+val jdbcHostname = "10.216.2.181"
+val jdbcPort = 1433
+val jdbcDatabase = "CentralDWH_LS"  
+val jdbcUrl = s"jdbc:sqlserver://10.216.2.181:1433;database=CentralDWH_LS;"
+val connectionProperties = new Properties()
+val driverClass = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+
+connectionProperties.put("user", s"")
+connectionProperties.put("password", s"")    
+connectionProperties.setProperty("Driver", driverClass)
+      
+//tableNames.foreach(path => println("TableName: " + path.substring(0,path.indexOf("/")) + ", ExtractDate: " + path.substring(path.lastIndexOf("extract_date"))))
+
+
+// PATH TO THE TESTDATA CSV HAVING ALL TEST DATA
+
+
+// CONNECTING TO THE LANDING ZONE
+dbutils.fs.refreshMounts()
+spark.conf.set("fs.azure.account.key.edplztstsa00.blob.core.windows.net", dbutils.secrets.get(scope = "adbtstkv00", key = "edplztstsa00key"))
+val strUsername ="edplztstsa00"       // Source blob location(CSV and JSON)
+val lz_blobName = "others"
+val sourcefolder = "avaya"
+
+// *****LOADING TABLE LIST*****
+var parenttablelistpath = "wasbs://test-parameters@edplztstsa00.blob.core.windows.net/table_list/db_csv/ingestion_avaya/DB_CSV_TestData.csv"
+var parentTable_list = spark.read.format("csv").option("header", "true").load(parenttablelistpath).toDF
+parentTable_list.createOrReplaceTempView("parentTable_list")
+var tableNames = parentTable_list.select("tablename").filter("sourcefolder='"+ sourcefolder +"'").collect().map(_(0)).toList
+var extractDates = parentTable_list.select("extract_date").filter("sourcefolder='"+ sourcefolder +"'").collect().map(_(0)).toList
+
+// *****LOADING KNOWN ISSUES LIST*****
+var knownissueslistpath = "wasbs://test-parameters@edplztstsa00.blob.core.windows.net/table_list/db_csv/ingestion_avaya/known_data_issues.csv"
+var knownissues_list = spark.read.format("csv").option("header", "true").load(knownissueslistpath).toDF
+knownissues_list.createOrReplaceTempView("knownissues_list")
+
+/*
+val tableNames: List[String] = List("Sessions_month_1/1/extract_date=2019-07-08",
+"Sessions_month_2/1/extract_date=2019-07-08",
+"Sessions_month_3/1/extract_date=2019-07-08",
+"Sessions_month_4/1/extract_date=2019-07-08",
+"Sessions_month_5/1/extract_date=2019-07-08",
+"Sessions_month_6/1/extract_date=2019-07-08",
+"Sessions_month_7/1/extract_date=2019-07-08",
+"Sessions_month_8/1/extract_date=2019-07-08",
+"Sessions_month_9/1/extract_date=2019-07-08",
+"Sessions_month_10/1/extract_date=2019-07-08",
+"Sessions_month_11/1/extract_date=2019-07-08",
+"Sessions_month_12/1/extract_date=2019-07-08")
+*/
+
+
+for (iterator <- 0 until tableNames.length){
+    /*
+    var tableNameNrunDate = tableNames(iterator)
+    srcTableName = tableNameNrunDate.substring(0,tableNameNrunDate.indexOf("/"))
+    runDate = tableNameNrunDate.substring(tableNameNrunDate.lastIndexOf("extract_date")).replace("extract_date=","")
+    */
+     var srcTableName = tableNames(iterator)
+     var extractDate = extractDates(iterator)
+    
+     var startTimeForTableMillis = System.currentTimeMillis()
+  
+    // Read Avaya data into dataframe    
+     var df_srcTable = spark.read.jdbc(jdbcUrl, "dbo." + srcTableName, connectionProperties)
+     df_srcTable.createOrReplaceTempView("df_srcTable")    
+
+    //Read CSV into dataframe
+     var blob_folderName = "wasbs://" + lz_blobName + "@" + strUsername + ".blob.core.windows.net/" + sourcefolder + "/" + srcTableName
+     var blob_folderName_extractPath = blob_folderName + "/1/extract_date=" + extractDate
+     var csvFileNames = dbutils.fs.ls(blob_folderName_extractPath)     
+            
+     println("\n")
+     println("Database table name: " + srcTableName)
+     println("Extract Date: " + extractDate)
+     println("CSV File names: ")      
+     csvFileNames.map(_.path).filter(_.contains("csv.bz2")).foreach(path => println("" + path))
+     println("*******************************************")
+     println("\n")
+     
+     var df_csv = spark.read.format("csv").option("header", "false").option("delimiter", "\u0001").load(blob_folderName_extractPath + "/*.csv.bz2")
+     df_csv.createOrReplaceTempView("df_csv")
+  
+     //Code to validate counts between DB table and CSV
+     println("Execute count comparison between Database table and CSV") 
+     var srcTable_count = df_srcTable.count() 
+     var csv_count = df_csv.count()
+     println("Database table Count is : " + srcTable_count)
+     println("CSV Count is : " + csv_count)
+     
+
+     if ((srcTable_count - csv_count) == 0){
+         println("Data count matching for both Database table and CSV --- PASS.")
+     } else{
+         println("Data count not matching for both Database table and CSV --- FAIL.")
+     }
+     println("*******************************************")
+     println("\n")
+     
+    
+    //Code to validate data between DB table and CSV  
+
+    //Trim columns from AVAYA table DF and CSV DF  
+     var df_csv_temp = df_csv //will be removed
+     var df_srcTable_temp = df_srcTable //will be removed
+  
+     df_srcTable_temp = df_srcTable_temp.drop("local_start_time","local_end_time","system_start_time","system_end_time","creation_date","remarked_at")
+  
+     df_csv_temp = df_csv_temp.drop("_c120")
+     df_csv_temp = df_csv_temp.drop("_c5","_c6","_c8","_c9","_c117","_c116")
+     
+     df_csv_temp = trimColumn(df_csv_temp, "_c14")
+     df_csv_temp = trimColumn(df_csv_temp, "_c15")
+     df_csv_temp = trimColumn(df_csv_temp, "_c16")
+  
+     df_csv_temp = emptyStringsToNonePerCol(df_csv_temp, "_c14")
+     df_csv_temp = emptyStringsToNonePerCol(df_csv_temp, "_c15")
+     df_csv_temp = emptyStringsToNonePerCol(df_csv_temp, "_c16")
+  
+     df_csv_temp = trimColumn(df_csv_temp, "_c22")
+     df_csv_temp = emptyStringsToNonePerCol(df_csv_temp, "_c22")
+     df_csv_temp = trimColumn(df_csv_temp, "_c119")
+     df_csv_temp = emptyStringsToNonePerCol(df_csv_temp, "_c119")
+     df_csv_temp = trimColumn(df_csv_temp, "_c114")
+     df_csv_temp = emptyStringsToNonePerCol(df_csv_temp, "_c114")
+     df_csv_temp = trimColumn(df_csv_temp, "_c81")
+     df_csv_temp = emptyStringsToNonePerCol(df_csv_temp, "_c81")  
+  
+     df_srcTable_temp = trimColumn(df_srcTable_temp, "ANI")
+     df_srcTable_temp = trimColumn(df_srcTable_temp, "DNIS")
+     df_srcTable_temp = trimColumn(df_srcTable_temp, "PBX_id")
+     df_srcTable_temp = emptyStringsToNonePerCol(df_srcTable_temp, "ANI")
+     df_srcTable_temp = emptyStringsToNonePerCol(df_srcTable_temp, "DNIS")
+     df_srcTable_temp = emptyStringsToNonePerCol(df_srcTable_temp, "PBX_id")
+     
+  
+     df_srcTable_temp = trimColumn(df_srcTable_temp, "switch_call_id")
+     df_srcTable_temp = trimColumn(df_srcTable_temp, "string_extension")
+     df_srcTable_temp = emptyStringsToNonePerCol(df_srcTable_temp, "switch_call_id")
+     df_srcTable_temp = emptyStringsToNonePerCol(df_srcTable_temp, "string_extension")
+     df_srcTable_temp = trimColumn(df_srcTable_temp, "remark")
+     df_srcTable_temp = emptyStringsToNonePerCol(df_srcTable_temp, "remark")
+     df_srcTable_temp = trimColumn(df_srcTable_temp, "p18_value")
+     df_srcTable_temp = emptyStringsToNonePerCol(df_srcTable_temp, "p18_value") 
+  
+  
+    /*
+     var df_csv_temp = df_csv.columns.foldLeft(df_csv) { (memoDF, colName) =>
+                      memoDF.withColumn(
+                        colName,      
+                        trim(col(colName))
+                      )
+     }
+
+     var df_srcTable_temp = df_srcTable.columns.foldLeft(df_srcTable) { (memoDF, colName) =>
+                      memoDF.withColumn(
+                        colName,      
+                        trim(col(colName))
+                      )
+     }      
+     df_srcTable_temp = emptyStringsToNone(df_srcTable_temp)
+     df_csv_temp = emptyStringsToNone(df_csv_temp)
+     */
+     df_srcTable_temp.createOrReplaceTempView("df_srcTable_temp")
+     df_csv_temp.createOrReplaceTempView("df_csv_temp")
+     
+     df_csv = df_csv_temp
+     df_srcTable = df_srcTable_temp
+  
+     var df_resultSrcTableMinCsv = df_srcTable.except(df_csv) 
+     var df_resultCsvMinSrcTable = df_csv.except(df_srcTable)    
+     df_resultSrcTableMinCsv.createOrReplaceTempView("df_resultSrcTableMinCsv")
+     df_resultCsvMinSrcTable.createOrReplaceTempView("df_resultCsvMinSrcTable")
+     var srcTable_minus_csv_count = df_resultSrcTableMinCsv.count() 
+     var csv_minus_srcTable_count = df_resultCsvMinSrcTable.count()
+     
+  
+     println("Execute data comparison between Database table and CSV ") 
+     println("Database table minus CSV comparison output: ")
+     //spark.sql("SELECT * FROM df_resultSrcTableMinCsv" ).show()
+     println("Database table minus CSV mismatch count : " + srcTable_minus_csv_count)
+
+     println("CSV VS Avaya table comparison output:")
+     //spark.sql("SELECT * FROM df_resultCsvMinSrcTable" ).show()
+     println("CSV minus Database table mismatch count : " + csv_minus_srcTable_count)    
+     
+    if((srcTable_minus_csv_count != 0) || (csv_minus_srcTable_count != 0)){
+      println("Database data not matched with CSV data - FAIL")
+      println("Top 10 Sequence number not matching: ")
+      df_resultCsvMinSrcTable.select($"_c0").limit(10).show(5,false)
+      df_resultSrcTableMinCsv.select($"sid_key").limit(10).show(5,false)
+    }else{
+      println("Database data matched with CSV data successfully - PASS")
+    }     
+     println("\n\n")
+     var endTimeForTableMillis = System.currentTimeMillis()    
+     println("Total time in minutes for current test case " + srcTableName + " is: " + ((endTimeForTableMillis-startTimeForTableMillis)/(1000 * 60)).toFloat)
+     println("\n#################################################################################\n")      
+}
+val endTimeMillis = System.currentTimeMillis()
+println("Total time in minutes for entire test suite: " + ((endTimeMillis-startTimeMillis)/(1000 * 60)).toFloat)
+println("\n#################################################################################\n")         
+    
