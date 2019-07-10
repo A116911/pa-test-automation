@@ -1,0 +1,8 @@
+﻿functionality,table_name,dataorigin,column_name,function,issuearea
+avaya_ingestion,Sessions_month_1,csv,_c120,drop_columns,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_1,csv,_c5;_c6;_c8;_c9;_c117;_c116,drop_columns,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_1,database,local_start_time;local_end_time;system_start_time;system_end_time;creation_date;remarked_at,drop_columns,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_1,csv,_c14;_c15;_c16;_c22;_c119;_c114;_c81,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_1,csv,_c14;_c15;_c16;_c22;_c119;_c114;_c81,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_1,database,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_1,database,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,replace_emptystring_with_null,Empty string in database is null in csv

@@ -8,11 +8,12 @@ import org.apache.spark.sql.functions.{col,lower,when,length,concat,lit,trim}
 import org.apache.spark.sql.{DataFrame,Column}
 import org.apache.spark.sql.types.DataTypes
 import scala.collection.immutable.List
+import java.time.LocalDateTime;
 
 val startTimeMillis = System.currentTimeMillis()
 
-
-def emptyStringsToNone(df: DataFrame): DataFrame = {
+//This function will replace empty string with null string in all columns in a dataframe
+def replaceEmptyStringsWithNull_allColumns(df: DataFrame): DataFrame = {
   df.schema.foldLeft(df)(
     (current, field) =>
       field.dataType match {
@@ -26,15 +27,69 @@ def emptyStringsToNone(df: DataFrame): DataFrame = {
   )
 } 
 
-def trimColumn(df: DataFrame, colName: String): DataFrame = {  
-  //Column col = new Column
+//This function will trim a single column in a dataframe
+def trimColumn(df: DataFrame, colName: String): DataFrame = {    
   var newDf = df.withColumn(colName, trim(col(colName)))
   return newDf
 }
 
-def emptyStringsToNonePerCol(df: DataFrame, colName: String): DataFrame = {  
-  //Column col = new Column
+//This function will trim all columns in a dataframe
+def trimAllColumns(df: DataFrame): DataFrame = {  
+  var newDf = df.columns.foldLeft(df) { (memoDF, colName) =>
+                      memoDF.withColumn(
+                        colName,      
+                        trim(col(colName))
+                      )
+  }  
+  return newDf
+}
+
+//This function will replace empty string with null string in a single column in a dataframe
+def replaceEmptyStringsWithNull_perColumn(df: DataFrame, colName: String): DataFrame = {    
   var newDf = df.withColumn(colName, when(length(col(colName)) === 0, lit(null: String)).otherwise(col(colName)))
+  return newDf
+}
+
+//This function will drop a column from a dataframe
+def dropColumn(df: DataFrame, colName: String): DataFrame = {    
+  var newDf: DataFrame = null
+  newDf = df.drop(colName)  
+  return newDf
+}
+
+//This function will take dataframe that needs to be cleaned and a dataframe of known issues
+//It will clean the dataframe as per the known issues and return a cleaned dataframe
+def fixKnownDataIssues(tobecleaned_df: DataFrame, kwnissues_orgn_colnme_func_df: DataFrame): DataFrame = { 
+  var column_list: List[String] = kwnissues_orgn_colnme_func_df.select("column_name").map(_.getString(0)).collect().toList
+  var function_names = kwnissues_orgn_colnme_func_df.select("function").collect().map(_.getString(0)).toList
+  var newDf: DataFrame = null
+  var tempDf: DataFrame = tobecleaned_df
+  
+  for(counter <- 0 until column_list.size){    
+    var column_name_arry = column_list(counter).split(";")
+    var function_name = function_names(counter)
+    
+    for(column_name <- column_name_arry) {      
+      newDf = determineActionAndExecute(tempDf, column_name, function_name)
+      tempDf = newDf
+    }      
+  }
+  newDf = tempDf
+  return newDf
+}
+
+
+//This function will take the dataframe that needs to be cleaned, column name that needs cleaning and function to be performed on the column
+def determineActionAndExecute(tobecleaned_df: DataFrame, column_name: String, func_name: String): DataFrame = { 
+  var newDf: DataFrame = null
+  
+  if(func_name.toLowerCase().trim().equals("drop_columns")){
+    newDf = dropColumn(tobecleaned_df, column_name)
+  }else if(func_name.toLowerCase().trim().equals("trim_columns")){
+    newDf = trimColumn(tobecleaned_df, column_name)
+  }else if(func_name.toLowerCase().trim().equals("replace_emptystring_with_null")){
+    newDf = replaceEmptyStringsWithNull_perColumn(tobecleaned_df, column_name)
+  }  
   return newDf
 }
 
@@ -47,14 +102,10 @@ val jdbcUrl = s"jdbc:sqlserver://10.216.2.181:1433;database=CentralDWH_LS;"
 val connectionProperties = new Properties()
 val driverClass = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
 
-connectionProperties.put("user", s"")
-connectionProperties.put("password", s"")    
-connectionProperties.setProperty("Driver", driverClass)
-      
-//tableNames.foreach(path => println("TableName: " + path.substring(0,path.indexOf("/")) + ", ExtractDate: " + path.substring(path.lastIndexOf("extract_date"))))
 
-
-// PATH TO THE TESTDATA CSV HAVING ALL TEST DATA
+connectionProperties.put("user", s"CDLread")
+connectionProperties.put("password", dbutils.secrets.get(scope = "adbtstkv00", key = "avayadb"))    
+connectionProperties.setProperty("Driver", driverClass)      
 
 
 // CONNECTING TO THE LANDING ZONE
@@ -76,28 +127,10 @@ var knownissueslistpath = "wasbs://test-parameters@edplztstsa00.blob.core.window
 var knownissues_list = spark.read.format("csv").option("header", "true").load(knownissueslistpath).toDF
 knownissues_list.createOrReplaceTempView("knownissues_list")
 
-/*
-val tableNames: List[String] = List("Sessions_month_1/1/extract_date=2019-07-08",
-"Sessions_month_2/1/extract_date=2019-07-08",
-"Sessions_month_3/1/extract_date=2019-07-08",
-"Sessions_month_4/1/extract_date=2019-07-08",
-"Sessions_month_5/1/extract_date=2019-07-08",
-"Sessions_month_6/1/extract_date=2019-07-08",
-"Sessions_month_7/1/extract_date=2019-07-08",
-"Sessions_month_8/1/extract_date=2019-07-08",
-"Sessions_month_9/1/extract_date=2019-07-08",
-"Sessions_month_10/1/extract_date=2019-07-08",
-"Sessions_month_11/1/extract_date=2019-07-08",
-"Sessions_month_12/1/extract_date=2019-07-08")
-*/
 
 
 for (iterator <- 0 until tableNames.length){
-    /*
-    var tableNameNrunDate = tableNames(iterator)
-    srcTableName = tableNameNrunDate.substring(0,tableNameNrunDate.indexOf("/"))
-    runDate = tableNameNrunDate.substring(tableNameNrunDate.lastIndexOf("extract_date")).replace("extract_date=","")
-    */
+  
      var srcTableName = tableNames(iterator)
      var extractDate = extractDates(iterator)
     
@@ -105,7 +138,7 @@ for (iterator <- 0 until tableNames.length){
   
     // Read Avaya data into dataframe    
      var df_srcTable = spark.read.jdbc(jdbcUrl, "dbo." + srcTableName, connectionProperties)
-     df_srcTable.createOrReplaceTempView("df_srcTable")    
+     df_srcTable.createOrReplaceTempView("df_srcTable")
 
     //Read CSV into dataframe
      var blob_folderName = "wasbs://" + lz_blobName + "@" + strUsername + ".blob.core.windows.net/" + sourcefolder + "/" + srcTableName
@@ -113,11 +146,12 @@ for (iterator <- 0 until tableNames.length){
      var csvFileNames = dbutils.fs.ls(blob_folderName_extractPath)     
             
      println("\n")
+     println("******************START TESTCASE EXECUTION*************************")
      println("Database table name: " + srcTableName)
      println("Extract Date: " + extractDate)
      println("CSV File names: ")      
      csvFileNames.map(_.path).filter(_.contains("csv.bz2")).foreach(path => println("" + path))
-     println("*******************************************")
+     println("Test case execution date: " + LocalDateTime.now())     
      println("\n")
      
      var df_csv = spark.read.format("csv").option("header", "false").option("delimiter", "\u0001").load(blob_folderName_extractPath + "/*.csv.bz2")
@@ -139,75 +173,33 @@ for (iterator <- 0 until tableNames.length){
      println("*******************************************")
      println("\n")
      
-    
+     println("Execute data comparison between Database table and CSV ")
     //Code to validate data between DB table and CSV  
+     var kwnissues_orgn_colnme_func_df = knownissues_list.select("table_name","dataorigin","column_name","function","issuearea").filter("functionality='avaya_ingestion'").filter("table_name='" + srcTableName + "'")
+     var db_kwnissues_orgn_colnme_func_df = kwnissues_orgn_colnme_func_df.filter("dataorigin='database'")
+     var csv_kwnissues_orgn_colnme_func_df = kwnissues_orgn_colnme_func_df.filter("dataorigin='csv'")
+  
+     db_kwnissues_orgn_colnme_func_df.createOrReplaceTempView("db_kwnissues_orgn_colnme_func_df")
+     csv_kwnissues_orgn_colnme_func_df.createOrReplaceTempView("csv_kwnissues_orgn_colnme_func_df")
 
-    //Trim columns from AVAYA table DF and CSV DF  
-     var df_csv_temp = df_csv //will be removed
-     var df_srcTable_temp = df_srcTable //will be removed
-  
-     df_srcTable_temp = df_srcTable_temp.drop("local_start_time","local_end_time","system_start_time","system_end_time","creation_date","remarked_at")
-  
-     df_csv_temp = df_csv_temp.drop("_c120")
-     df_csv_temp = df_csv_temp.drop("_c5","_c6","_c8","_c9","_c117","_c116")
+    //Clean dataframe as per known issues      
+     var df_srcTable_temp: DataFrame = fixKnownDataIssues(df_srcTable,db_kwnissues_orgn_colnme_func_df)
+     var df_csv_temp: DataFrame = fixKnownDataIssues(df_csv,csv_kwnissues_orgn_colnme_func_df)     
      
-     df_csv_temp = trimColumn(df_csv_temp, "_c14")
-     df_csv_temp = trimColumn(df_csv_temp, "_c15")
-     df_csv_temp = trimColumn(df_csv_temp, "_c16")
-  
-     df_csv_temp = emptyStringsToNonePerCol(df_csv_temp, "_c14")
-     df_csv_temp = emptyStringsToNonePerCol(df_csv_temp, "_c15")
-     df_csv_temp = emptyStringsToNonePerCol(df_csv_temp, "_c16")
-  
-     df_csv_temp = trimColumn(df_csv_temp, "_c22")
-     df_csv_temp = emptyStringsToNonePerCol(df_csv_temp, "_c22")
-     df_csv_temp = trimColumn(df_csv_temp, "_c119")
-     df_csv_temp = emptyStringsToNonePerCol(df_csv_temp, "_c119")
-     df_csv_temp = trimColumn(df_csv_temp, "_c114")
-     df_csv_temp = emptyStringsToNonePerCol(df_csv_temp, "_c114")
-     df_csv_temp = trimColumn(df_csv_temp, "_c81")
-     df_csv_temp = emptyStringsToNonePerCol(df_csv_temp, "_c81")  
-  
-     df_srcTable_temp = trimColumn(df_srcTable_temp, "ANI")
-     df_srcTable_temp = trimColumn(df_srcTable_temp, "DNIS")
-     df_srcTable_temp = trimColumn(df_srcTable_temp, "PBX_id")
-     df_srcTable_temp = emptyStringsToNonePerCol(df_srcTable_temp, "ANI")
-     df_srcTable_temp = emptyStringsToNonePerCol(df_srcTable_temp, "DNIS")
-     df_srcTable_temp = emptyStringsToNonePerCol(df_srcTable_temp, "PBX_id")
-     
-  
-     df_srcTable_temp = trimColumn(df_srcTable_temp, "switch_call_id")
-     df_srcTable_temp = trimColumn(df_srcTable_temp, "string_extension")
-     df_srcTable_temp = emptyStringsToNonePerCol(df_srcTable_temp, "switch_call_id")
-     df_srcTable_temp = emptyStringsToNonePerCol(df_srcTable_temp, "string_extension")
-     df_srcTable_temp = trimColumn(df_srcTable_temp, "remark")
-     df_srcTable_temp = emptyStringsToNonePerCol(df_srcTable_temp, "remark")
-     df_srcTable_temp = trimColumn(df_srcTable_temp, "p18_value")
-     df_srcTable_temp = emptyStringsToNonePerCol(df_srcTable_temp, "p18_value") 
-  
-  
-    /*
-     var df_csv_temp = df_csv.columns.foldLeft(df_csv) { (memoDF, colName) =>
-                      memoDF.withColumn(
-                        colName,      
-                        trim(col(colName))
-                      )
-     }
-
-     var df_srcTable_temp = df_srcTable.columns.foldLeft(df_srcTable) { (memoDF, colName) =>
-                      memoDF.withColumn(
-                        colName,      
-                        trim(col(colName))
-                      )
-     }      
-     df_srcTable_temp = emptyStringsToNone(df_srcTable_temp)
-     df_csv_temp = emptyStringsToNone(df_csv_temp)
-     */
+   
      df_srcTable_temp.createOrReplaceTempView("df_srcTable_temp")
      df_csv_temp.createOrReplaceTempView("df_csv_temp")
      
+     df_srcTable = df_srcTable_temp   
      df_csv = df_csv_temp
-     df_srcTable = df_srcTable_temp
+     
+     println("Following transformations were applied on the DB table dataframe to handle known issues: ")
+     db_kwnissues_orgn_colnme_func_df.show(db_kwnissues_orgn_colnme_func_df.count().toInt, false)
+    
+     println("Following transformations were applied on the CSV dataframe to handle known issues: ")
+     csv_kwnissues_orgn_colnme_func_df.show(csv_kwnissues_orgn_colnme_func_df.count().toInt, false)
+  
+    println("Dataframe comparison between source and target")
   
      var df_resultSrcTableMinCsv = df_srcTable.except(df_csv) 
      var df_resultCsvMinSrcTable = df_csv.except(df_srcTable)    
@@ -217,13 +209,12 @@ for (iterator <- 0 until tableNames.length){
      var csv_minus_srcTable_count = df_resultCsvMinSrcTable.count()
      
   
-     println("Execute data comparison between Database table and CSV ") 
-     println("Database table minus CSV comparison output: ")
-     //spark.sql("SELECT * FROM df_resultSrcTableMinCsv" ).show()
+     println("Database table minus CSV comparison output using scala except function: ")
+     spark.sql("SELECT * FROM df_resultSrcTableMinCsv" ).show()
      println("Database table minus CSV mismatch count : " + srcTable_minus_csv_count)
 
-     println("CSV VS Avaya table comparison output:")
-     //spark.sql("SELECT * FROM df_resultCsvMinSrcTable" ).show()
+     println("CSV VS Database table comparison output using scala except function:")
+     spark.sql("SELECT * FROM df_resultCsvMinSrcTable" ).show()
      println("CSV minus Database table mismatch count : " + csv_minus_srcTable_count)    
      
     if((srcTable_minus_csv_count != 0) || (csv_minus_srcTable_count != 0)){
@@ -236,10 +227,10 @@ for (iterator <- 0 until tableNames.length){
     }     
      println("\n\n")
      var endTimeForTableMillis = System.currentTimeMillis()    
-     println("Total time in minutes for current test case " + srcTableName + " is: " + ((endTimeForTableMillis-startTimeForTableMillis)/(1000 * 60)).toFloat)
-     println("\n#################################################################################\n")      
+     println("Total time in minutes for current test case is: " + ((endTimeForTableMillis-startTimeForTableMillis)/(1000 * 60)).toFloat)
+     println("\n******************END TESTCASE EXECUTION*************************\n")
 }
 val endTimeMillis = System.currentTimeMillis()
 println("Total time in minutes for entire test suite: " + ((endTimeMillis-startTimeMillis)/(1000 * 60)).toFloat)
-println("\n#################################################################################\n")         
-    
+println("\n#################################################################################\n")  
+println("Note: Refer GIT for automation code used in above testing.")
