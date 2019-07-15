@@ -1,0 +1,5 @@
+﻿functionality,table_name,dataorigin,column_name,function,issuearea
+avaya_typingloading,transcripts,csv,_c2;_c3,drop_columns,Timestamp format issue with Databricks
+avaya_typingloading,transcripts,pqt,localstarttime;localendtime,drop_columns,Timestamp format issue with Databricks
+sap_typingloading,zifitt502,pqt,ds_update_ts,drop_columns,Timestamp format issue with Databricks
+sap_typingloading,zifitt502,csv,_c30,drop_columns,Timestamp format issue with Databricks
