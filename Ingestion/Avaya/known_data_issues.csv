@@ -1,8 +1,196 @@
-﻿functionality,table_name,dataorigin,column_name,function,issuearea
+functionality,table_name,dataorigin,column_name,function,issuearea
 avaya_ingestion,Sessions_month_1,csv,_c120,drop_columns,Timestamp format issue with Databricks
-avaya_ingestion,Sessions_month_1,csv,_c5;_c6;_c8;_c9;_c117;_c116,drop_columns,Timestamp format issue with Databricks
-avaya_ingestion,Sessions_month_1,database,local_start_time;local_end_time;system_start_time;system_end_time;creation_date;remarked_at,drop_columns,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_1,csv,_c5;_c6;_c8;_c9;_c117;_c116,csv_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_1,database,local_start_time;local_end_time;system_start_time;system_end_time;creation_date;remarked_at,db_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
 avaya_ingestion,Sessions_month_1,csv,_c14;_c15;_c16;_c22;_c119;_c114;_c81,trim_columns,Space gets truncated by Ingestion process in csv
 avaya_ingestion,Sessions_month_1,csv,_c14;_c15;_c16;_c22;_c119;_c114;_c81,replace_emptystring_with_null,Empty string in database is null in csv
 avaya_ingestion,Sessions_month_1,database,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,trim_columns,Space gets truncated by Ingestion process in csv
 avaya_ingestion,Sessions_month_1,database,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_1,csv,_c65,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_1,database,p2_value,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_1,temp_csv,local_start_time;local_end_time;system_start_time;system_end_time;creation_date;remarked_at,csv_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_1,temp_csv,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_1,temp_csv,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_1,temp_csv,p2_value,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_1,temp_csv,ds_update_ts,drop_columns,Extra column ds_update_ts gets appended in CSV
+avaya_ingestion,Sessions_month_1,temp_csv,hash,drop_columns,No data issue but it is hash column not present in DB
+avaya_ingestion,Sessions_month_2,csv,_c120,drop_columns,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_2,csv,_c5;_c6;_c8;_c9;_c117;_c116,csv_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_2,database,local_start_time;local_end_time;system_start_time;system_end_time;creation_date;remarked_at,db_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_2,csv,_c14;_c15;_c16;_c22;_c119;_c114;_c81,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_2,csv,_c14;_c15;_c16;_c22;_c119;_c114;_c81,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_2,database,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_2,database,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_2,csv,_c65,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_2,database,p2_value,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_2,temp_csv,local_start_time;local_end_time;system_start_time;system_end_time;creation_date;remarked_at,csv_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_2,temp_csv,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_2,temp_csv,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_2,temp_csv,p2_value,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_2,temp_csv,ds_update_ts,drop_columns,Extra column ds_update_ts gets appended in CSV
+avaya_ingestion,Sessions_month_2,temp_csv,hash,drop_columns,No data issue but it is hash column not present in DB
+avaya_ingestion,Sessions_month_3,csv,_c120,drop_columns,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_3,csv,_c5;_c6;_c8;_c9;_c117;_c116,csv_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_3,database,local_start_time;local_end_time;system_start_time;system_end_time;creation_date;remarked_at,db_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_3,csv,_c14;_c15;_c16;_c22;_c119;_c114;_c81,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_3,csv,_c14;_c15;_c16;_c22;_c119;_c114;_c81,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_3,database,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_3,database,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_3,csv,_c65,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_3,database,p2_value,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_3,temp_csv,local_start_time;local_end_time;system_start_time;system_end_time;creation_date;remarked_at,csv_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_3,temp_csv,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_3,temp_csv,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_3,temp_csv,p2_value,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_3,temp_csv,ds_update_ts,drop_columns,Extra column ds_update_ts gets appended in CSV
+avaya_ingestion,Sessions_month_3,temp_csv,hash,drop_columns,No data issue but it is hash column not present in DB
+avaya_ingestion,Sessions_month_4,csv,_c120,drop_columns,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_4,csv,_c5;_c6;_c8;_c9;_c117;_c116,csv_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_4,database,local_start_time;local_end_time;system_start_time;system_end_time;creation_date;remarked_at,db_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_4,csv,_c14;_c15;_c16;_c22;_c119;_c114;_c81,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_4,csv,_c14;_c15;_c16;_c22;_c119;_c114;_c81,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_4,database,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_4,database,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_4,csv,_c65,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_4,database,p2_value,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_4,temp_csv,local_start_time;local_end_time;system_start_time;system_end_time;creation_date;remarked_at,csv_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_4,temp_csv,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_4,temp_csv,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_4,temp_csv,p2_value,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_4,temp_csv,ds_update_ts,drop_columns,Extra column ds_update_ts gets appended in CSV
+avaya_ingestion,Sessions_month_4,temp_csv,hash,drop_columns,No data issue but it is hash column not present in DB
+avaya_ingestion,Sessions_month_5,csv,_c120,drop_columns,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_5,csv,_c5;_c6;_c8;_c9;_c117;_c116,csv_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_5,database,local_start_time;local_end_time;system_start_time;system_end_time;creation_date;remarked_at,db_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_5,csv,_c14;_c15;_c16;_c22;_c119;_c114;_c81,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_5,csv,_c14;_c15;_c16;_c22;_c119;_c114;_c81,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_5,database,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_5,database,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_5,csv,_c65,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_5,database,p2_value,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_5,temp_csv,local_start_time;local_end_time;system_start_time;system_end_time;creation_date;remarked_at,csv_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_5,temp_csv,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_5,temp_csv,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_5,temp_csv,p2_value,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_5,temp_csv,ds_update_ts,drop_columns,Extra column ds_update_ts gets appended in CSV
+avaya_ingestion,Sessions_month_5,temp_csv,hash,drop_columns,No data issue but it is hash column not present in DB
+avaya_ingestion,Sessions_month_6,csv,_c120,drop_columns,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_6,csv,_c5;_c6;_c8;_c9;_c117;_c116,csv_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_6,database,local_start_time;local_end_time;system_start_time;system_end_time;creation_date;remarked_at,db_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_6,csv,_c14;_c15;_c16;_c22;_c119;_c114;_c81,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_6,csv,_c14;_c15;_c16;_c22;_c119;_c114;_c81,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_6,database,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_6,database,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_6,csv,_c65,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_6,database,p2_value,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_6,temp_csv,local_start_time;local_end_time;system_start_time;system_end_time;creation_date;remarked_at,csv_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_6,temp_csv,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_6,temp_csv,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_6,temp_csv,p2_value,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_6,temp_csv,ds_update_ts,drop_columns,Extra column ds_update_ts gets appended in CSV
+avaya_ingestion,Sessions_month_6,temp_csv,hash,drop_columns,No data issue but it is hash column not present in DB
+avaya_ingestion,Sessions_month_7,csv,_c120,drop_columns,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_7,csv,_c5;_c6;_c8;_c9;_c117;_c116,csv_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_7,database,local_start_time;local_end_time;system_start_time;system_end_time;creation_date;remarked_at,db_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_7,csv,_c14;_c15;_c16;_c22;_c119;_c114;_c81,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_7,csv,_c14;_c15;_c16;_c22;_c119;_c114;_c81,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_7,database,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_7,database,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_7,csv,_c65,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_7,database,p2_value,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_7,temp_csv,local_start_time;local_end_time;system_start_time;system_end_time;creation_date;remarked_at,csv_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_7,temp_csv,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_7,temp_csv,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_7,temp_csv,p2_value,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_7,temp_csv,ds_update_ts,drop_columns,Extra column ds_update_ts gets appended in CSV
+avaya_ingestion,Sessions_month_7,temp_csv,hash,drop_columns,No data issue but it is hash column not present in DB
+avaya_ingestion,Sessions_month_8,csv,_c120,drop_columns,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_8,csv,_c5;_c6;_c8;_c9;_c117;_c116,csv_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_8,database,local_start_time;local_end_time;system_start_time;system_end_time;creation_date;remarked_at,db_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_8,csv,_c14;_c15;_c16;_c22;_c119;_c114;_c81,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_8,csv,_c14;_c15;_c16;_c22;_c119;_c114;_c81,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_8,database,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_8,database,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_8,csv,_c65,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_8,database,p2_value,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_8,temp_csv,local_start_time;local_end_time;system_start_time;system_end_time;creation_date;remarked_at,csv_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_8,temp_csv,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_8,temp_csv,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_8,temp_csv,p2_value,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_8,temp_csv,ds_update_ts,drop_columns,Extra column ds_update_ts gets appended in CSV
+avaya_ingestion,Sessions_month_8,temp_csv,hash,drop_columns,No data issue but it is hash column not present in DB
+avaya_ingestion,Sessions_month_9,csv,_c120,drop_columns,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_9,csv,_c5;_c6;_c8;_c9;_c117;_c116,csv_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_9,database,local_start_time;local_end_time;system_start_time;system_end_time;creation_date;remarked_at,db_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_9,csv,_c14;_c15;_c16;_c22;_c119;_c114;_c81,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_9,csv,_c14;_c15;_c16;_c22;_c119;_c114;_c81,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_9,database,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_9,database,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_9,csv,_c65,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_9,database,p2_value,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_9,temp_csv,local_start_time;local_end_time;system_start_time;system_end_time;creation_date;remarked_at,csv_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_9,temp_csv,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_9,temp_csv,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_9,temp_csv,p2_value,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_9,temp_csv,ds_update_ts,drop_columns,Extra column ds_update_ts gets appended in CSV
+avaya_ingestion,Sessions_month_9,temp_csv,hash,drop_columns,No data issue but it is hash column not present in DB
+avaya_ingestion,Sessions_month_10,csv,_c120,drop_columns,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_10,csv,_c5;_c6;_c8;_c9;_c117;_c116,csv_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_10,database,local_start_time;local_end_time;system_start_time;system_end_time;creation_date;remarked_at,db_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_10,csv,_c14;_c15;_c16;_c22;_c119;_c114;_c81,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_10,csv,_c14;_c15;_c16;_c22;_c119;_c114;_c81,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_10,database,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_10,database,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_10,csv,_c65,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_10,database,p2_value,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_10,temp_csv,local_start_time;local_end_time;system_start_time;system_end_time;creation_date;remarked_at,csv_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_10,temp_csv,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_10,temp_csv,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_10,temp_csv,p2_value,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_10,temp_csv,ds_update_ts,drop_columns,Extra column ds_update_ts gets appended in CSV
+avaya_ingestion,Sessions_month_10,temp_csv,hash,drop_columns,No data issue but it is hash column not present in DB
+avaya_ingestion,Sessions_month_11,csv,_c120,drop_columns,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_11,csv,_c5;_c6;_c8;_c9;_c117;_c116,csv_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_11,database,local_start_time;local_end_time;system_start_time;system_end_time;creation_date;remarked_at,db_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_11,csv,_c14;_c15;_c16;_c22;_c119;_c114;_c81,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_11,csv,_c14;_c15;_c16;_c22;_c119;_c114;_c81,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_11,database,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_11,database,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_11,csv,_c65,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_11,database,p2_value,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_11,temp_csv,local_start_time;local_end_time;system_start_time;system_end_time;creation_date;remarked_at,csv_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_11,temp_csv,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_11,temp_csv,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_11,temp_csv,p2_value,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_11,temp_csv,ds_update_ts,drop_columns,Extra column ds_update_ts gets appended in CSV
+avaya_ingestion,Sessions_month_11,temp_csv,hash,drop_columns,No data issue but it is hash column not present in DB
+avaya_ingestion,Sessions_month_12,csv,_c120,drop_columns,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_12,csv,_c5;_c6;_c8;_c9;_c117;_c116,csv_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_12,database,local_start_time;local_end_time;system_start_time;system_end_time;creation_date;remarked_at,db_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_12,csv,_c14;_c15;_c16;_c22;_c119;_c114;_c81,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_12,csv,_c14;_c15;_c16;_c22;_c119;_c114;_c81,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_12,database,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_12,database,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_12,csv,_c65,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_12,database,p2_value,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_12,temp_csv,local_start_time;local_end_time;system_start_time;system_end_time;creation_date;remarked_at,csv_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,Sessions_month_12,temp_csv,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,trim_columns,Space gets truncated by Ingestion process in csv
+avaya_ingestion,Sessions_month_12,temp_csv,ANI;DNIS;PBX_id;switch_call_id;string_extension;remark;p18_value,replace_emptystring_with_null,Empty string in database is null in csv
+avaya_ingestion,Sessions_month_12,temp_csv,p2_value,append_zeroes_upto_10,0 gets trimmed from DB to CSV
+avaya_ingestion,Sessions_month_12,temp_csv,ds_update_ts,drop_columns,Extra column ds_update_ts gets appended in CSV
+avaya_ingestion,Sessions_month_12,temp_csv,hash,drop_columns,No data issue but it is hash column not present in DB
+avaya_ingestion,acs_results_withfcr_ls,database,Start Date;RESPONSESTARTDATEAOTZ,db_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,acs_results_withfcr_ls,temp_csv,RESPONSESTARTDATEAOTZ;Start Date,csv_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,acs_results_withfcr_ls,csv,_c11;_c21,csv_yyyy_mm_dd_t_hh_mm_ss_sssz_to_yy_mm_dd_t_hh_mm_ss_sss,Timestamp format issue with Databricks
+avaya_ingestion,acs_results_withfcr_ls,csv,_c28,drop_last_column,Extra column ds_update_ts gets appended in CSV
+avaya_ingestion,acs_results_withfcr_ls,temp_csv,ds_update_ts,drop_columns,Extra column ds_update_ts gets appended in CSV
+avaya_ingestion,acs_results_withfcr_ls,temp_csv,hash,drop_columns,No data issue but it is hash column not present in DB
+avaya_ingestion,acs_results_withfcr_ls,database,Comment,drop_columns,Comment columns is getting read as boolean and String in Databricks for DB and CSV respectively
+avaya_ingestion,acs_results_withfcr_ls,temp_csv,Comment,drop_columns,Comment columns is getting read as boolean and String in Databricks for DB and CSV respectively
+avaya_ingestion,acs_results_withfcr_ls,csv,_c13,drop_columns,Comment columns is getting read as boolean and String in Databricks for DB and CSV respectively
+avaya_ingestion,acs_results_withfcr_ls,database,SurveyCusAttr,replace_emptystring_with_null,SurveyCusAttr has spaces in db and null in csv
+avaya_ingestion,acs_results_withfcr_ls,temp_csv,SurveyCusAttr,replace_emptystring_with_null,SurveyCusAttr has spaces in db and null in csv
+avaya_ingestion,acs_results_withfcr_ls,csv,_c14,replace_emptystring_with_null,SurveyCusAttr has spaces in db and null in csv
+avaya_ingestion,acs_results_withfcr_ls,database,FIRSTNAME;LASTNAME;FullName;Phone,trim_columns,First name last name and Phone have additional spaces
+avaya_ingestion,acs_results_withfcr_ls,temp_csv,FIRSTNAME;LASTNAME;FullName;Phone,trim_columns,First name last name FullName and Phone have additional spaces
+avaya_ingestion,acs_results_withfcr_ls,csv,_c4;_c5;_c18;_c27,trim_columns,First name last name FullName and Phone have additional spaces

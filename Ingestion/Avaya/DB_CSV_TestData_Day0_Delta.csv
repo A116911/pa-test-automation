@@ -1,0 +1,14 @@
+blobname,sourcefolder,tablename,db_pk_column,csv_pk_column,day0_extract_date,day1_extract_date,dataclassification,runValidation
+others,avaya,Sessions_month_1,sid_key,_c0,2019-07-20,2019-07-21,commercial,no
+others,avaya,Sessions_month_2,sid_key,_c0,2019-07-18,2019-07-19,commercial,no
+others,avaya,Sessions_month_3,sid_key,_c0,2019-07-18,2019-07-19,commercial,no
+others,avaya,Sessions_month_4,sid_key,_c0,2019-07-18,2019-07-19,commercial,no
+others,avaya,Sessions_month_5,sid_key,_c0,2019-07-18,2019-07-19,commercial,no
+others,avaya,Sessions_month_6,sid_key,_c0,2019-07-19,2019-07-20,commercial,no
+others,avaya,Sessions_month_7,sid_key,_c0,2019-07-21,2019-07-22,commercial,no
+others,avaya,Sessions_month_8,sid_key,_c0,2019-07-21,2019-07-22,commercial,no
+others,avaya,Sessions_month_9,sid_key,_c0,2019-07-21,2019-07-22,commercial,no
+others,avaya,Sessions_month_10,sid_key,_c0,2019-07-21,2019-07-22,commercial,no
+others,avaya,Sessions_month_11,sid_key,_c0,2019-07-21,2019-07-22,commercial,no
+others,avaya,Sessions_month_12,sid_key,_c0,2019-07-21,2019-07-22,commercial,no
+others,avaya,acs_results_withfcr_ls,surveycallid,_c10,2019-07-21,2019-07-22,commercial,yes
