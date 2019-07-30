@@ -1,4 +1,4 @@
-//Compare full extract CSV with DB = no mismatch
+//Delta validation for Avaya ingestion
 //libraries
 import scala.util.control._
 import java.util.Properties
@@ -12,6 +12,13 @@ import scala.collection.immutable.List
 import java.time.LocalDateTime;
 
 val startTimeMillis = System.currentTimeMillis()
+
+//Filter records for specific value in a column
+def filterDataframe(df: DataFrame, retcolName: String, filtercolName: String, filtercolvalue: String): DataFrame = { 	
+	var filterString: String = filtercolName + "='" + filtercolvalue + "'"	
+	var newDf = df.select(retcolName).filter(filterString) 
+	return newDf
+}
 
 // Check whether column exists in dataframe
 def hasColumn(df: DataFrame, colName: String): Boolean = {
@@ -245,10 +252,10 @@ for (iterator <- 0 until tableNames.length){
      df_srcTable.createOrReplaceTempView("df_srcTable")
 
     //Read CSV into dataframe
-     var blob_folderName = "wasbs://" + lz_blobName + "@" + strUsername + ".blob.core.windows.net/" + sourcefolder + "/" + srcTableName     
-     var day1_delta_csv_path = blob_folderName + "/1/extract_date=" + day1_extractDate
-     var day1_temp_full_csv_path = blob_folderName + "/temp/full/extract_date=" + day1_extractDate
-     var day0_temp_full_csv_path = blob_folderName + "/temp/full/extract_date=" + day0_extractDate  
+     var blob_folderName = "wasbs://" + lz_blobName + "@" + strUsername + ".blob.core.windows.net/" + sourcefolder + "/"      
+     var day1_delta_csv_path = blob_folderName + srcTableName + "/1/extract_date=" + day1_extractDate
+     var day1_temp_full_csv_path = blob_folderName + "/temp/" + srcTableName + "/full/extract_date=" + day1_extractDate
+     var day0_temp_full_csv_path = blob_folderName + "/temp/" + srcTableName + "/full/extract_date=" + day0_extractDate  
 
      var day1_delta_csv_filename = dbutils.fs.ls(day1_delta_csv_path)
      var day1_temp_full_csv_filename = dbutils.fs.ls(day1_temp_full_csv_path)
@@ -273,11 +280,21 @@ for (iterator <- 0 until tableNames.length){
      println("\n")
      
      var df_day1_delta_csv = spark.read.format("csv").option("header", "false").option("delimiter", "\u0001").load(day1_delta_csv_path + "/*.csv.bz2")
+     var day1_delta_csv_pk_insert_df = df_day1_delta_csv.select("_c2").filter("_c1='I'")
+	 var day1_delta_csv_pk_update_df = df_day1_delta_csv.select("_c2").filter("_c1='U'")
+	 var day1_delta_csv_pk_delete_df = df_day1_delta_csv.select("_c2").filter("_c1='D'") 
+     //var valFilter: List[String] = List("I","U")
+     //var df_day1_delta_insertupdates_csv = df_day1_delta_csv.filter(df_day1_delta_csv.col("_c1").isin(valFilter:_*))
+    
+     
+      
      var df_day1_temp_full_csv = spark.read.format("csv").option("header", "true").option("delimiter", "\u0001").load(day1_temp_full_csv_path + "/*.csv.bz2")
      var df_day0_temp_full_csv = spark.read.format("csv").option("header", "true").option("delimiter", "\u0001").load(day0_temp_full_csv_path + "/*.csv.bz2")  
      df_day1_delta_csv.createOrReplaceTempView("df_day1_delta_csv")
      df_day1_temp_full_csv.createOrReplaceTempView("df_day1_temp_full_csv")
      df_day0_temp_full_csv.createOrReplaceTempView("df_day0_temp_full_csv")
+      
+     
     
       // **************************************************************************************************************************************************
       // Code to validate data
@@ -296,7 +313,8 @@ for (iterator <- 0 until tableNames.length){
        var df_srcTable_temp: DataFrame = fixKnownDataIssues(df_srcTable,db_kwnissues_orgn_colnme_func_df)
        var df_day1_delta_csv_temp: DataFrame = fixKnownDataIssues(df_day1_delta_csv,csv_kwnissues_orgn_colnme_func_df)
        var df_day1_temp_full_csv_temp: DataFrame = fixKnownDataIssues(df_day1_temp_full_csv,tempcsv_kwnissues_orgn_colnme_func_df) 
-       var df_day0_temp_full_csv_temp: DataFrame = fixKnownDataIssues(df_day0_temp_full_csv,tempcsv_kwnissues_orgn_colnme_func_df)        
+       var df_day0_temp_full_csv_temp: DataFrame = fixKnownDataIssues(df_day0_temp_full_csv,tempcsv_kwnissues_orgn_colnme_func_df) 
+       
        
        df_srcTable_temp.createOrReplaceTempView("df_srcTable_temp")
        df_day1_delta_csv_temp.createOrReplaceTempView("df_day1_delta_csv_temp")
@@ -317,90 +335,158 @@ for (iterator <- 0 until tableNames.length){
       
      var count_day1_delta_csv = df_day1_delta_csv.count()
      var count_day1_temp_full_csv = df_day1_temp_full_csv.count()
-     println("Count of records in Day 1 delta CSV file: " + count_day1_delta_csv)
+	 var count_srcTable = df_srcTable.count()
+     var count_day0_temp_full_csv = df_day0_temp_full_csv.count()     
      println("Count of records in Day 1 temp full CSV file: " + count_day1_temp_full_csv)
-     println("Count of records in Day 1 DB: " + df_srcTable.count())
-     println("Count of records in Day 0 temp full CSV file: " + df_day0_temp_full_csv.count())
-     println("\n\n")
+     println("Count of records in Day 1 DB: " + count_srcTable)
+     println("Count of records in Day 0 temp full CSV file: " + count_day0_temp_full_csv)
+	 println("Count of records in Day 1 delta CSV file: " + count_day1_delta_csv)
+     
+     var day1_delta_csv_pk_insert_count = day1_delta_csv_pk_insert_df.count()
+	 var day1_delta_csv_pk_update_count = day1_delta_csv_pk_update_df.count()
+	 var day1_delta_csv_pk_delete_count = day1_delta_csv_pk_delete_df.count()
+     println("Counts of inserted records in Day 1 Delta CSV: " + day1_delta_csv_pk_insert_count)
+     println("Counts of updated records in Day 1 Delta CSV: " + day1_delta_csv_pk_update_count)
+	 println("Counts of deleted records in Day 1 Delta CSV: " + day1_delta_csv_pk_delete_count)
       
-      //Code to validate data between Day 1 temp csv file and Day 1 DB
-     println("Execute comparison of Day 1 temp csv file vs Day 1 DB: ")
+     println("\n\n")     
+       
+     //Code to validate insert/update data between Day 1 temp csv file and Day 1 DB
+     println("TC1: Execute data comparison of records in Day 1 temp csv file vs Day 1 DB: ")
      var df_result_day1tempfullcsv_minus_day1db = df_day1_temp_full_csv.except(df_srcTable)
      var count_result_day1tempfullcsv_minus_day1db = df_result_day1tempfullcsv_minus_day1db.count()
      df_result_day1tempfullcsv_minus_day1db.createOrReplaceTempView("df_result_day1tempfullcsv_minus_day1db")  
      println("Count of mismatched records between Day 1 temp csv file except Day 1 DB: " + count_result_day1tempfullcsv_minus_day1db)
      if(count_result_day1tempfullcsv_minus_day1db == 0){
-        println("Validate no data mismatch between Day 1 temp csv file and Day 1 DB - PASS")
+        println("Validate no insert/update data mismatch between Day 1 temp csv file and Day 1 DB - PASS")
      }else{
-        println("Validate no data mismatch between Day 1 temp csv file and Day 1 DB - FAIL")
+        println("Validate no insert/update data mismatch between Day 1 temp csv file and Day 1 DB - FAIL")
      }  
      println("\n\n")
-  
-    //Code to validate data between Day 1 temp full csv file and Day 0 temp full CSV
-    //Store the differences in DF
+    
+      
+    //Code to calculate insert/update data:
+    //Compare Day 1 temp full csv file and Day 0 temp full CSV
+    //Store the differences in DF. This is the expected insert/update records
     //Compare the differences dataframe with day1 delta CSV
-     println("Execute comparison of Day 1 temp full csv vs Day 0 temp full csv vs Day 1 delta csv: ") 
+     println("TC2: Execute comparison of INSERT/UPDATE records in Day 1 temp full csv vs Day 0 temp full csv vs Day 1 delta csv: ") 
      var df_result_day1tempfullcsv_minus_day0tempfullcsv = df_day1_temp_full_csv.except(df_day0_temp_full_csv)
      var count_result_day1tempfullcsv_minus_day0tempfullcsv = df_result_day1tempfullcsv_minus_day0tempfullcsv.count()
-     println("Count of mismatched records between Day 1 temp csv file except Day 0 temp csv file: " + count_result_day1tempfullcsv_minus_day0tempfullcsv)
+     println("Count of mismatched records between Day 1 temp csv file except Day 0 temp csv file. This is total expected count of insert plus update: " + count_result_day1tempfullcsv_minus_day0tempfullcsv)
      if(count_day1_delta_csv != 0){
        var df_diff_minus_day1deltacsv = df_result_day1tempfullcsv_minus_day0tempfullcsv.except(df_day1_delta_csv)
-       var df_day1deltacsv_minus_diff = df_day1_delta_csv.except(df_result_day1tempfullcsv_minus_day0tempfullcsv)
+       //var df_day1deltacsv_minus_diff = df_day1_delta_csv.except(df_result_day1tempfullcsv_minus_day0tempfullcsv)
        var count_diff_minus_day1deltacsv = df_diff_minus_day1deltacsv.count()
-       var count_day1deltacsv_minus_diff = df_day1deltacsv_minus_diff.count()
-       println("Count of mismatched records between differences of Day1 and Day0 temp file except Day 1 delta csv file: " + count_diff_minus_day1deltacsv)
-       println("Count of mismatched records between Day 1 delta csv file except differences of Day1 and Day0 temp file: " + count_day1deltacsv_minus_diff)
-       if((count_diff_minus_day1deltacsv == 0) && (count_day1deltacsv_minus_diff == 0)){
-        println("Validate delta data between Day 1 temp full csv file except Day 0 temp full CSV should match with Day1 delta csv file - PASS")
+       //var count_day1deltacsv_minus_diff = df_day1deltacsv_minus_diff.count()
+       println("Count of mismatched records between differences of Day1 and Day0 temp file except Day 1 delta csv file:  " + count_diff_minus_day1deltacsv)
+       //println("Count of mismatched records between Day 1 delta csv file except differences of Day1 and Day0 temp file. Any non zero value is expected to be delete count: " + count_day1deltacsv_minus_diff)
+       if((count_diff_minus_day1deltacsv == 0)){
+        println("Validate insert/update delta data between Day 1 temp full csv file except Day 0 temp full CSV should match with Day1 delta csv file - PASS")
        }else{
-        println("Validate delta data between Day 1 temp full csv file except Day 0 temp full CSV should match with Day1 delta csv file - FAIL")
+        println("Validate insert/update delta data between Day 1 temp full csv file except Day 0 temp full CSV should match with Day1 delta csv file - FAIL")
        }
       }else{
            println("0 records in Delta csv file. Hence skipping comparison of Day 1 temp full csv vs Day 0 temp full csv vs Day 1 delta csv")
       }
      println("\n\n")
       
-  
-    //Code to validate data between Day 1 delta file and Day 1 DB
-     println("Execute comparison of Day 1 delta csv vs Day 1 DB: ") 
+    /*
+    //Code to validate insert/update data between Day 1 delta file and Day 1 DB
+     println("Execute comparison of insert/update records in Day 1 delta csv vs Day 1 DB: ") 
      if(count_day1_delta_csv != 0){
        var df_result_day1delta_minus_day1db = df_day1_delta_csv.except(df_srcTable)
        var count_result_day1delta_minus_day1db = df_result_day1delta_minus_day1db.count()
        df_result_day1delta_minus_day1db.createOrReplaceTempView("df_result_day1delta_minus_day1db")  
-       println("Count of mismatched records between Day 1 delta file except Day 1 DB: " + count_result_day1delta_minus_day1db)
-       if(count_result_day1delta_minus_day1db == 0){
-          println("Validate no data mismatch between Day 1 delta file and Day 1 DB - PASS")
+       println("Count of mismatched records between Day 1 delta file except Day 1 DB. Any non zero value is expected to be delete count: " + count_result_day1delta_minus_day1db)
+       if(count_result_day1delta_minus_day1db-day1_delta_csv_pk_delete_count == 0){
+          println("Validate no data mismatch of insert/update records between Day 1 delta file and Day 1 DB - PASS")
        }else{
-          println("Validate no data mismatch between Day 1 delta file and Day 1 DB - FAIL")
+          println("Validate no data mismatch of insert/update records between Day 1 delta file and Day 1 DB - FAIL")
        }
      }else{
        println("0 records in Delta csv file. Hence skipping comparison with Day 1 delta csv vs Day 1 DB")
      }     
      println("\n\n")
+     */
       
-    //Code to validate data between Day 1 delta file and Day 1 temp full CSV
-     println("Execute comparison of Day 1 delta csv vs Day 1 temp full csv: ")
+      /*
+    //Code to validate insert/update data between Day 1 delta file and Day 1 temp full CSV
+     println("Execute comparison of insert/update records in Day 1 delta csv vs Day 1 temp full csv: ")
      if(count_day1_delta_csv != 0){
        var df_result_day1deltacsv_minus_day1tempfullcsv = df_day1_delta_csv.except(df_day1_temp_full_csv)
-       var df_result_day1tempfullcsv_minus_day1delta = df_day1_temp_full_csv.except(df_day1_delta_csv)
+       //var df_result_day1tempfullcsv_minus_day1delta = df_day1_temp_full_csv.except(df_day1_delta_csv)
        var count_result_day1deltacsv_minus_day1tempfullcsv = df_result_day1deltacsv_minus_day1tempfullcsv.count()
-       var count_result_day1tempfullcsv_minus_day1deltacsv = df_result_day1tempfullcsv_minus_day1delta.count()
+       //var count_result_day1tempfullcsv_minus_day1deltacsv = df_result_day1tempfullcsv_minus_day1delta.count()
        df_result_day1deltacsv_minus_day1tempfullcsv.createOrReplaceTempView("df_result_day1deltacsv_minus_day1tempfullcsv")  
-       df_result_day1tempfullcsv_minus_day1delta.createOrReplaceTempView("df_result_day1tempfullcsv_minus_day1delta")  
-       println("Count of mismatched records between Day 1 delta file except Day 1 temp full CSV: " + count_result_day1deltacsv_minus_day1tempfullcsv) 
-       println("Count of mismatched records between Day 1 temp full CSV except Day 1 delta csv: " + count_result_day1tempfullcsv_minus_day1deltacsv)
-       var count_day1tempcsv_minus_day1deltacsv = count_day1_temp_full_csv - count_day1_delta_csv
-       println("Substraction of records in Day 1 temp full CSV and Day 1 delta csv: " + count_day1tempcsv_minus_day1deltacsv)
-       if((count_result_day1deltacsv_minus_day1tempfullcsv == 0) && (count_day1tempcsv_minus_day1deltacsv == count_result_day1tempfullcsv_minus_day1deltacsv)){
-          println("Validate no data mismatch between Day 1 delta file and Day 1 temp csv file - PASS")       
+       //df_result_day1tempfullcsv_minus_day1delta.createOrReplaceTempView("df_result_day1tempfullcsv_minus_day1delta")  
+       println("Count of mismatched records between Day 1 delta file except Day 1 temp full CSV. Any non zero value should be delete records: " + count_result_day1deltacsv_minus_day1tempfullcsv) 
+       //println("Count of mismatched records between Day 1 temp full CSV except Day 1 delta csv: " + count_result_day1tempfullcsv_minus_day1deltacsv)
+       //var count_day1tempcsv_minus_day1deltacsv = count_day1_temp_full_csv - count_day1_delta_csv
+       //println("Substraction of records in Day 1 temp full CSV and Day 1 delta csv: " + count_day1tempcsv_minus_day1deltacsv)
+       //&& (count_day1tempcsv_minus_day1deltacsv == count_result_day1tempfullcsv_minus_day1deltacsv)
+       if((count_result_day1deltacsv_minus_day1tempfullcsv - day1_delta_csv_pk_delete_count == 0)){
+          println("Validate no data mismatch between update/insert records in Day 1 delta file and Day 1 temp csv file - PASS")       
        }else{
-          println("Validate no data mismatch between Day 1 delta file and Day 1 temp csv file - FAIL")
+          println("Validate no data mismatch between update/insert records in Day 1 delta file and Day 1 temp csv file - FAIL")
        }
      }else{
        println("0 records in Delta csv file. Hence skipping comparison Day 1 delta csv vs Day 1 temp full csv")
      }
      println("\n\n") 
-  
+	 */
+	 
+	 //Code to compare counts of inserts,updates,deletes by comparing Day1 full temp CSV file with Day 0 temp full CSV file with Day 1 delta CSV file
+	 println("TC3: Validate counts of insert, update, delete by comparing Day 1 temp full CSV and Day 0 temp full CSV with Day 1 Delta CSV file")
+	 println("Step 1: Run an except between Day1TempCsv.except(Day0TempCsv) and store results in DF. This will give insert, update records in Dataframe IplusU_DF")
+	 println("Step 2: Select all the insert,update primary keys from above DF and store in another dataframe IplusU_pks")
+	 println("Step 3: Select all the primary keys from Day0TempCsv and store in Dataframe day0_pks")
+	 println("Step 4: Select all the primary keys from Day1TempCsv and store in Dataframe day1_pks")
+	 println("Step 5: IplusU_pks minus day0_pks gives Day1_Inserts")
+	 println("Step 6: IplusU_pks intersect day0_pks gives Day1_Updates")
+	 println("Step 7: day0_pks minus day1_pks gives Day1_Deletes")
+     println("Step 8: Get counts of primary keys with I,U,D operation type from Day 1 delta file")
+	 
+	 var csvpk: String = pr_lst_csv_pks(iterator)
+     var dbpk: String = pr_lst_db_pks(iterator)
+	 var day1_temp_pk_df = df_day1_temp_full_csv.select(dbpk)
+	 var day0_temp_pk_df = df_day0_temp_full_csv.select(dbpk)
+	 //Get primary key of insert and update records in single dataframe
+	 var df_tmpday1Mtempday0_pk = df_result_day1tempfullcsv_minus_day0tempfullcsv.select(dbpk)
+	 var df_day1_inserts_pk = df_tmpday1Mtempday0_pk.except(day0_temp_pk_df) //stores primary key of inserts
+	 var df_day1_updates_pk = df_tmpday1Mtempday0_pk.intersect(day0_temp_pk_df)	//stores primary key of updates
+	 var df_day1_deletes_pk = day0_temp_pk_df.except(day1_temp_pk_df)
+	 var count_day1_inserts_pk = df_day1_inserts_pk.count()
+	 var count_day1_updates_pk = df_day1_updates_pk.count()
+	 var count_day1_deletes_pk = df_day1_deletes_pk.count() 	 
+	 println("Expected counts of inserted records in Day1 temp CSV and Day 0 temp CSV: " + count_day1_inserts_pk)
+	 println("Expected counts of updated records in Day1 temp CSV and Day 0 temp CSV: " + count_day1_updates_pk)
+	 println("Expected counts of deleted records in Day1 temp CSV and Day 0 temp CSV: " + count_day1_deletes_pk)
+     println("Actual counts of inserted records in Day 1 Delta CSV: " + day1_delta_csv_pk_insert_count)
+	 println("Actual counts of updated records in Day 1 Delta CSV: " + day1_delta_csv_pk_update_count)
+	 println("Actual counts of deleted records in Day 1 Delta CSV: " + day1_delta_csv_pk_delete_count)
+
+      /*
+     //Code to compare data of actual delete records in Day 1 delta csv file with expected delete records
+	 println("TC4: Validate expected delete records with actual delete records in Day 1 Delta CSV file") 
+     var df_day1_delete_df = df_day0_temp_full_csv.join(df_day1_temp_full_csv, df_day0_temp_full_csv.col(dbpk) != df_day1_temp_full_csv.col(dbpk), "leftouter")
+     */ 
+      
+     
+      
+      /*
+	 //Code to get counts of inserts,updates,deletes from Delta file
+	 println("Total counts of records in Day 1 Delta CSV: " + df_day1_delta_csv.count())
+	 var day1_delta_csv_pk_insert_count = day1_delta_csv_pk_insert_df.count()
+	 var day1_delta_csv_pk_update_count = day1_delta_csv_pk_update_df.count()
+	 var day1_delta_csv_pk_delete_count = day1_delta_csv_pk_delete_df.count()	
+	 */
+      
+	 println("Compare expected and actual counts of insert,updates, deletes in Day1 Delta CSV")
+	 if((day1_delta_csv_pk_insert_count-count_day1_inserts_pk==0) && (day1_delta_csv_pk_update_count-count_day1_updates_pk==0) && (day1_delta_csv_pk_delete_count-count_day1_deletes_pk==0)){
+		 println("Comparison between actual and expected counts of insert,update,delete - PASS")
+	 }else{
+		 println("Comparison between actual and expected counts of insert,update,delete - FAIL")		 
+	 } 
      
      var endTimeForTableMillis = System.currentTimeMillis()    
      println("Total time in minutes for current test case is: " + ((endTimeForTableMillis-startTimeForTableMillis)/(1000 * 60)).toFloat)
