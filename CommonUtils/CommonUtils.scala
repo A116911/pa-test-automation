@@ -13,6 +13,14 @@ import java.time.LocalDateTime;
 
 val startTimeMillis = System.currentTimeMillis()
 
+
+//Filter records for specific value in a column
+def filterDataframe(df: DataFrame, retcolName: String, filtercolName: String, filtercolvalue: String): DataFrame = { 	
+	var filterString: String = filtercolName + "='" + filtercolvalue + "'"	
+	var newDf = df.select(retcolName).filter(filterString) 
+	return newDf
+}
+
 // Check whether column exists in dataframe
 def hasColumn(df: DataFrame, colName: String): Boolean = {
   df.columns.contains(colName)

@@ -36,7 +36,7 @@ val startTimeMillis = System.currentTimeMillis()
     spark.conf.set("fs.azure.account.key.edplztstsa00.blob.core.windows.net", dbutils.secrets.get(scope = "adbtstkv00", key = "edplztstsa00key"))
 
     // Load CSV file to DataFrame
-    var sap_dd03l_csv = spark.read.format("csv").option("header", "false").option("infer_datetime_format","True").option("delimiter",                                             "\u0001").load(s"wasbs://" + strSourceName + "@edplztstsa00.blob.core.windows.net/dd03l/1/*")
+    var sap_dd03l_csv = spark.read.format("csv").option("header", "false").option("infer_datetime_format","True").option("delimiter","\u0001").load(s"wasbs://" + strSourceName + "@edplztstsa00.blob.core.windows.net/dd03l/1/*")
 
     //****************************************************
     //Load table list

@@ -26,6 +26,18 @@ def replaceEmptyStringsWithNull_allColumns(df: DataFrame): DataFrame = {
   )
 } 
 
+//This function will append zeroes to a column in a dataframe upto the columnLength
+//NewDataframe with modidied column will be returned
+def appendZeroes(df: DataFrame, columnName: String, columnLength: Int) : DataFrame = {
+  var newDf: DataFrame = null
+  var tempDf: DataFrame = df
+  for( counter <- 1 to columnLength){
+    tempDf = tempDf.withColumn(columnName,when(length(col(columnName))<counter,concat(lit("0"), col(columnName))).otherwise(col(columnName)))
+  } 
+  newDf = tempDf
+  return newDf
+}
+
 //This function will trim a single column in a dataframe
 def trimColumn(df: DataFrame, colName: String): DataFrame = {    
   var newDf = df.withColumn(colName, trim(col(colName)))
@@ -53,6 +65,13 @@ def replaceEmptyStringsWithNull_perColumn(df: DataFrame, colName: String): DataF
 def dropColumn(df: DataFrame, colName: String): DataFrame = {    
   var newDf: DataFrame = null
   newDf = df.drop(colName)  
+  return newDf
+}
+
+//This function will drop last column from a dataframe
+def dropLastColumn(df: DataFrame): DataFrame = {    
+  var newDf: DataFrame = null
+  newDf = df.drop(df.columns.last)  
   return newDf
 }
 
@@ -89,7 +108,12 @@ def determineActionAndExecute(tobecleaned_df: DataFrame, column_name: String, fu
     newDf = trimColumn(tobecleaned_df, column_name)
   }else if(func_name.toLowerCase().trim().equals("replace_emptystring_with_null")){
     newDf = replaceEmptyStringsWithNull_perColumn(tobecleaned_df, column_name)
-  }  
+  }else if(func_name.toLowerCase().trim().equals("drop_last_column")){
+    newDf = dropLastColumn(tobecleaned_df)
+  }else if(func_name.toLowerCase().trim().contains("append_zeroes_upto_")){    
+    var lengthOfField:Int = (func_name.replaceAll("append_zeroes_upto_","")).toInt
+    newDf = appendZeroes(tobecleaned_df, column_name, lengthOfField)
+  }
   return newDf
 }
 
@@ -329,20 +353,15 @@ def findUnmatchedColumns_5rows(src_df: DataFrame, tar_df: DataFrame, srcpk: Stri
         }
         
         var df_csv = spark.read.format("csv").option("header", "false").option("delimiter", "\u0001").load(csvPath)
-        //df_csv = df_csv.drop("_c2","_c3")//"_c17","_c27",        
-                
-        //df_csv = df_csv.withColumn("_c11",when(length(col("_c11"))<3,concat(lit("00"), col("_c11"))).otherwise(col("_c11")))
-        //df_csv = df_csv.withColumn("_c17",when(length(col("_c17"))<12,concat(lit("00000000000"), col("_c17"))).otherwise(col("_c17")))
+        //df_csv = df_csv.drop("_c2","_c3")       
        
         df_csv.createOrReplaceTempView("csv")
 
         val csvCount = df_csv.count()
 
         var df_pqt = spark.read.parquet(strParquetFilePathInner) 
-        df_pqt = df_pqt.drop("monotonically_increasing_id","_monotonically_increasing_id","_filename","filename")
-        
-        //df_pqt = df_pqt.drop("ds_update_ts")
-        //df_pqt = df_pqt.drop("localstarttime","localendtime")//"over_due_amount","zvertrag",
+        df_pqt = df_pqt.drop("monotonically_increasing_id","_monotonically_increasing_id","_filename","filename")        
+        //df_pqt = df_pqt.drop("ds_update_ts")        
 
         df_pqt.createOrReplaceTempView("pqt")
 
@@ -384,7 +403,7 @@ def findUnmatchedColumns_5rows(src_df: DataFrame, tar_df: DataFrame, srcpk: Stri
           df_pqt = df_pqt_temp        
           println("Following transformations were applied on the CSV dataframe to handle known issues: ")
           csv_kwnissues_orgn_colnme_func_df.show(csv_kwnissues_orgn_colnme_func_df.count().toInt, false)
-          println("Following transformations were applied on the DB table dataframe to handle known issues: ")
+          println("Following transformations were applied on the PQT dataframe to handle known issues: ")
           pqt_kwnissues_orgn_colnme_func_df.show(pqt_kwnissues_orgn_colnme_func_df.count().toInt, false)
         }
         
@@ -408,13 +427,13 @@ def findUnmatchedColumns_5rows(src_df: DataFrame, tar_df: DataFrame, srcpk: Stri
         println(" ")
 
         println("CSV Vs PQT comparison output:")
-        spark.sql("SELECT * FROM ResultCsv" ).show()
+        spark.sql("SELECT * FROM ResultCsv" ).show(5,false)
         println("Data mismatch count in between CSV and PQT :" + csvDataCount + " records ")
 
         println(" ")
 
         println("PQT Vs CSV comparison output:")
-        spark.sql("SELECT * FROM ResultPqt" ).show()
+        spark.sql("SELECT * FROM ResultPqt" ).show(5,false)
         println("Data mismatch count in between PQT and CSV :" + pqtDataCount + " records ")
         
         if((csvDataCount != 0) || (pqtDataCount != 0)){

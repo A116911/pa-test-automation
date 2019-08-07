@@ -106,13 +106,13 @@ println("********** Execute data testing for Parquet and Staging files *********
           // SHOW THE PARQUE AND STAGING DATAFRAMES
           // GET THE PARQUE AND STAGING RECORDS
           df_tableResult = df_tableResult.drop("LoadDateTime","RecordSource","LoadAuditId","LoadToolCode") 
-          
+          df_tableResult = df_tableResult.drop("zcreation_time","zvalid_from_time","zvalid_to_time","zchanged_time")
           //df_tableResult.show()
           var StgCount = df_tableResult.count()
       
           df_pqt = df_pqt.drop("monotonically_increasing_id","filename")
           df_pqt = df_pqt.drop("_monotonically_increasing_id","_filename")
-          
+          df_pqt = df_pqt.drop("zcreation_time","zvalid_from_time","zvalid_to_time","zchanged_time")
       
       
           //df_pqt.show()
