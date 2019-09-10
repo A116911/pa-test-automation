@@ -1,13 +1,3 @@
-SELECT isc.table_schema,isc.table_name,isc.column_name, isc.ordinal_position,isc.column_default,isc.is_nullable as mandatory, isc.data_type,isc.character_maximum_length, 
-ptds.distribution_policy_desc, pcds.distribution_ordinal
-FROM INFORMATION_SCHEMA.COLUMNS isc
-inner join sys.objects so on isc.table_name = so.name
-inner join sys.pdw_table_distribution_properties ptds on so.object_id = ptds.object_id
-inner join sys.pdw_column_distribution_properties pcds on so.object_id = pcds.object_id and isc.ordinal_position = pcds.column_id
-WHERE isc.table_name like '%hub_CRM_TransactionHeaderGuid%';
-
-
-
 --Validate table schema, table name, column name, mandatory, datatype, columnlength, columnprecision, columndistribution, distributionkey
 WITH HLS (targetschema, TARGETTABLENAME, targetfieldname)
 AS
