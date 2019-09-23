@@ -1,0 +1,335 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "factoryName": {
+            "type": "string",
+            "metadata": "Data Factory Name",
+            "defaultValue": "sfaz-df1"
+        },
+        "storageLinkedService_connectionString": {
+            "type": "secureString",
+            "metadata": "Secure string for 'connectionString' of 'storageLinkedService'"
+        },
+        "AzureSqlDW1_connectionString": {
+            "type": "secureString",
+            "metadata": "Secure string for 'connectionString' of 'AzureSqlDW1'"
+        },
+        "ds_in_properties_typeProperties_fileName": {
+            "type": "string",
+            "defaultValue": "input.txt"
+        },
+        "ds_in_properties_typeProperties_folderPath": {
+            "type": "string",
+            "defaultValue": "adfv2tutorial/input"
+        },
+        "ds_out_properties_typeProperties_folderPath": {
+            "type": "string",
+            "defaultValue": "adfv2tutorial/output"
+        }
+    },
+    "variables": {
+        "factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+    },
+    "resources": [
+        {
+            "name": "[concat(parameters('factoryName'), '/ds_in')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "storageLinkedService",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "AzureBlob",
+                "typeProperties": {
+                    "fileName": "[parameters('ds_in_properties_typeProperties_fileName')]",
+                    "folderPath": "[parameters('ds_in_properties_typeProperties_folderPath')]"
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/storageLinkedService')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ds_out')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "storageLinkedService",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "AzureBlob",
+                "typeProperties": {
+                    "folderPath": "[parameters('ds_out_properties_typeProperties_folderPath')]"
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/storageLinkedService')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/storageLinkedService')]",
+            "type": "Microsoft.DataFactory/factories/linkedServices",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "annotations": [],
+                "type": "AzureStorage",
+                "typeProperties": {
+                    "connectionString": "[parameters('storageLinkedService_connectionString')]"
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/AzureSqlDW1')]",
+            "type": "Microsoft.DataFactory/factories/linkedServices",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "annotations": [],
+                "type": "AzureSqlDW",
+                "typeProperties": {
+                    "connectionString": "[parameters('AzureSqlDW1_connectionString')]"
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/copyPipeline')]",
+            "type": "Microsoft.DataFactory/factories/pipelines",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "activities": [
+                    {
+                        "name": "copyBlobtoBlob",
+                        "type": "Copy",
+                        "dependsOn": [],
+                        "policy": {
+                            "timeout": "7.00:00:00",
+                            "retry": 0,
+                            "retryIntervalInSeconds": 30,
+                            "secureOutput": false,
+                            "secureInput": false
+                        },
+                        "userProperties": [],
+                        "typeProperties": {
+                            "source": {
+                                "type": "BlobSource",
+                                "recursive": true
+                            },
+                            "sink": {
+                                "type": "BlobSink"
+                            },
+                            "enableStaging": false
+                        },
+                        "inputs": [
+                            {
+                                "referenceName": "ds_in",
+                                "type": "DatasetReference",
+                                "parameters": {}
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "referenceName": "ds_out",
+                                "type": "DatasetReference",
+                                "parameters": {}
+                            }
+                        ]
+                    }
+                ],
+                "annotations": []
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/datasets/ds_in')]",
+                "[concat(variables('factoryId'), '/datasets/ds_out')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/SQLDWPipeline_InfoMart_dim_contractaccount')]",
+            "type": "Microsoft.DataFactory/factories/pipelines",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "activities": [
+                    {
+                        "name": "dimContractAccount",
+                        "type": "SqlServerStoredProcedure",
+                        "dependsOn": [],
+                        "policy": {
+                            "timeout": "7.00:00:00",
+                            "retry": 0,
+                            "retryIntervalInSeconds": 30,
+                            "secureOutput": false,
+                            "secureInput": false
+                        },
+                        "userProperties": [],
+                        "typeProperties": {
+                            "storedProcedureName": "[[etl].[sp_dim_contractaccount_reload]",
+                            "storedProcedureParameters": {
+                                "LoadAuditId": {
+                                    "value": {
+                                        "value": "@pipeline().parameters.LoadAuditId",
+                                        "type": "Expression"
+                                    },
+                                    "type": "String"
+                                },
+                                "LoadDateTime": {
+                                    "value": {
+                                        "value": "@pipeline().parameters.LoadDateTime",
+                                        "type": "Expression"
+                                    },
+                                    "type": "String"
+                                },
+                                "LoadToolCode": {
+                                    "value": {
+                                        "value": "@pipeline().parameters.LoadToolCode",
+                                        "type": "Expression"
+                                    },
+                                    "type": "String"
+                                },
+                                "ChangeStartDate": {
+                                    "value": {
+                                        "value": "@pipeline().parameters.ChangeStartDate",
+                                        "type": "Expression"
+                                    },
+                                    "type": "String"
+                                },
+                                "ChangeEndDate": {
+                                    "value": {
+                                        "value": "@pipeline().parameters.ChangeEndDate",
+                                        "type": "Expression"
+                                    },
+                                    "type": "String"
+                                },
+                                "LoadType": {
+                                    "value": {
+                                        "value": "@pipeline().parameters.LoadType",
+                                        "type": "Expression"
+                                    },
+                                    "type": "String"
+                                }
+                            }
+                        },
+                        "linkedServiceName": {
+                            "referenceName": "AzureSqlDW1",
+                            "type": "LinkedServiceReference"
+                        }
+                    }
+                ],
+                "parameters": {
+                    "LoadAuditId": {
+                        "type": "String",
+                        "defaultValue": "@pipeline().RunId"
+                    },
+                    "LoadDateTime": {
+                        "type": "String",
+                        "defaultValue": "@utcnow()"
+                    },
+                    "LoadToolCode": {
+                        "type": "String",
+                        "defaultValue": "ADF"
+                    },
+                    "ChangeStartDate": {
+                        "type": "String"
+                    },
+                    "ChangeEndDate": {
+                        "type": "String"
+                    },
+                    "LoadType": {
+                        "type": "String",
+                        "defaultValue": "FULL"
+                    }
+                },
+                "folder": {
+                    "name": "SQLDWActivities"
+                },
+                "annotations": []
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/AzureSqlDW1')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ControlPipeline_InfoMart_dim_contractaccount')]",
+            "type": "Microsoft.DataFactory/factories/pipelines",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "activities": [
+                    {
+                        "name": "dim_ContractAccount",
+                        "type": "ExecutePipeline",
+                        "dependsOn": [],
+                        "userProperties": [],
+                        "typeProperties": {
+                            "pipeline": {
+                                "referenceName": "SQLDWPipeline_InfoMart_dim_contractaccount",
+                                "type": "PipelineReference"
+                            },
+                            "waitOnCompletion": true,
+                            "parameters": {
+                                "LoadAuditId": {
+                                    "type": "String",
+                                    "defaultValue": "@pipeline().RunId"
+                                },
+                                "LoadDateTime": {
+                                    "type": "String",
+                                    "defaultValue": "@utcnow()"
+                                },
+                                "LoadToolCode": {
+                                    "type": "String",
+                                    "defaultValue": "ADF"
+                                },
+                                "ChangeStartDate": {
+                                    "type": "String",
+                                    "defaultValue": null
+                                },
+                                "ChangeEndDate": {
+                                    "type": "String",
+                                    "defaultValue": null
+                                },
+                                "LoadType": {
+                                    "type": "String",
+                                    "defaultValue": "FULL"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "parameters": {
+                    "LoadAuditId": {
+                        "type": "String",
+                        "defaultValue": "@pipeline().RunId"
+                    },
+                    "LoadDateTime": {
+                        "type": "String",
+                        "defaultValue": "@utcnow()"
+                    },
+                    "LoadToolCode": {
+                        "type": "String",
+                        "defaultValue": "ADF"
+                    },
+                    "ChangeStartDate": {
+                        "type": "String"
+                    },
+                    "ChangeEndDate": {
+                        "type": "String"
+                    },
+                    "LoadType": {
+                        "type": "String",
+                        "defaultValue": "FULL"
+                    }
+                },
+                "folder": {
+                    "name": "ControlPipelines"
+                },
+                "annotations": []
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/pipelines/SQLDWPipeline_InfoMart_dim_contractaccount')]"
+            ]
+        }
+    ]
+}

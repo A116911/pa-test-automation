@@ -1,0 +1,97 @@
+trigger:
+  - master
+
+variables:
+  - name: AZURE_LOCATION
+    value: australiasoutheast
+
+stages:
+  - stage: build
+    displayName: 'Build and test the website'
+    jobs:
+      - job: run_build
+        pool:
+          vmImage: 'ubuntu-latest'
+        variables:
+          - group: "workspace-enterprise-data-app-dev"
+          - name: NotebookName
+            value: helloworld
+          - name: buildDir
+            value: "$(Build.ArtifactStagingDirectory)"
+        steps: {
+          - bash: |
+              mkdir -p "$(buildDir)/notebooks"
+              find . -name '*.scala' | cpio -pdm $(buildDir)/notebooks/
+            displayName: 'Prepare Notebook Build Artifacts'
+          - bash: |
+              mkdir -p "$(buildDir)/adf_template"
+              cp -R datafactory/* "$(buildDir)/adf_template/"
+            displayName: 'Include Azure DataFactory Resource Manager templates into Build Artifacts'
+          - task: PublishBuildArtifacts@1
+            displayName: Publish DataFactory ARM Template Build Artifacts
+            inputs:
+              pathtoPublish: '$(buildDir)/adf_template'
+              artifactName: adf_template
+          - task: PublishBuildArtifacts@1
+            displayName: Publish Notebook Build Artifacts
+            inputs:
+              pathtoPublish: '$(buildDir)/notebooks/'
+              artifactName: notebooks
+
+  - stage: deploy
+    displayName: 'Deploy Databricks Notebooks'
+    jobs:
+      - job: run_deploy
+        pool:
+          vmImage: 'ubuntu-latest'
+        variables:
+          - group: "workspace-enterprise-data-app-dev"
+        steps:
+          - download: current
+            artifact: notebooks
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '3.7'
+            displayName: 'Use Python 3.7'
+
+          - bash: |
+              python -m pip install --upgrade pip setuptools wheel databricks-cli
+            displayName: 'Install Azure Databricks CLI'
+
+          - bash: |
+              databricks configure --token <<EOF
+              https://$(AZURE_LOCATION).azuredatabricks.net
+              $(DB_TOKEN)
+              EOF
+            displayName: 'Authenticate with Azure Databricks CLI'
+
+          - bash: |
+              databricks workspace mkdirs /pa-test-automation
+              for nb in $(Pipeline.Workspace)/notebooks/*.scala
+              do
+                databricks workspace mkdirs "/pa-test-automation/${nb#$(Pipeline.Workspace)/notebooks/}"
+              	echo "Importing notebook - $nb"
+                databricks workspace import --language SCALA --format SOURCE --overwrite $nb "/pa-test-automation/${nb#$(Pipeline.Workspace)/notebooks/}"
+              done
+            displayName: 'Upload notebooks to Azure Databricks'
+
+#  - stage: deploy_datafactory
+#    displayName: 'Deploy Azure DataFactory'
+#    jobs:
+#      - job: run_deploy_datafactory
+#        pool:
+#          vmImage: 'Ubuntu 16.04'
+#        variables:
+#          - group: "workspace-enterprise-data-app-dev"
+#        steps:
+#          - download: current
+#            artifact: adf_template
+#          - task: AzureResourceGroupDeployment@2
+#            displayName: 'Azure DataFactory Deployment'
+#            inputs:
+#              azureSubscription: SUBSCRIPTION_SERVICE
+#              resourceGroupName: $(RESOURCE_GROUP)
+#              location: 'Australia East'
+#              csmFile: '$(Pipeline.Workspace)/adf_template/arm_template.json'
+#              csmParametersFile: '$(Pipeline.Workspace)/adf_template/arm_template_parameters.json'
+#              overrideParameters: '-factoryName "$(adf_name)" -storageLinkedService_connectionString "" -AzureSqlDW1_connectionString "" -ds_in_properties_typeProperties_fileName "input.txt" -ds_in_properties_typeProperties_folderPath "adfv2tutorial/input" -ds_out_properties_typeProperties_folderPath "adfv2tutorial/output"'
