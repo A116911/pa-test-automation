@@ -39,36 +39,36 @@ stages:
               pathtoPublish: '$(buildDir)/notebooks/'
               artifactName: notebooks
 
-  - stage: deploy
-    displayName: 'Deploy Databricks Notebooks'
-    jobs:
-      - job: run_deploy
-        pool:
-          vmImage: 'ubuntu-latest'
-        steps:
-          - checkout: none
-          - download: current
-            artifact: notebooks
-          - task: UsePythonVersion@0
-            inputs:
-              versionSpec: '3.7'
-            displayName: 'Use Python 3.7'
+  # - stage: deploy
+  #   displayName: 'Deploy Databricks Notebooks'
+  #   jobs:
+  #     - job: run_deploy
+  #       pool:
+  #         vmImage: 'ubuntu-latest'
+  #       steps:
+  #         - checkout: none
+  #         - download: current
+  #           artifact: notebooks
+  #         - task: UsePythonVersion@0
+  #           inputs:
+  #             versionSpec: '3.7'
+  #           displayName: 'Use Python 3.7'
 
-          - bash: |
-              python -m pip install --upgrade pip setuptools wheel databricks-cli
-            displayName: 'Install Azure Databricks CLI'
+  #         - bash: |
+  #             python -m pip install --upgrade pip setuptools wheel databricks-cli
+  #           displayName: 'Install Azure Databricks CLI'
 
-          - bash: |
-              databricks configure --token <<EOF
-              https://$(AZURE_LOCATION).azuredatabricks.net
-              $(DB_TOKEN)
-              EOF
-            displayName: 'Authenticate with Azure Databricks CLI'
+  #         - bash: |
+  #             databricks configure --token <<EOF
+  #             https://$(AZURE_LOCATION).azuredatabricks.net
+  #             $(DB_TOKEN)
+  #             EOF
+  #           displayName: 'Authenticate with Azure Databricks CLI'
 
-          - bash: |
-              databricks workspace mkdirs /Shared/pa_test_automation
-              databricks workspace import_dir -o $(Pipeline.Workspace)/notebooks /Shared/pa_test_automation
-            displayName: 'Upload notebooks to Azure Databricks'
+  #         - bash: |
+  #             databricks workspace mkdirs /Shared/pa_test_automation
+  #             databricks workspace import_dir -o $(Pipeline.Workspace)/notebooks /Shared/pa_test_automation
+  #           displayName: 'Upload notebooks to Azure Databricks'
 
   - stage: deploy_datafactory
     displayName: 'Deploy Azure DataFactory'
