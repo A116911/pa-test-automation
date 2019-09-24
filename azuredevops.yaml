@@ -5,6 +5,7 @@ variables:
   - name: AZURE_LOCATION
     value: australiasoutheast
   - group: workspace-enterprise-data-app-dev
+  - group: enterprise-data-dev-workspace-keys
 
 stages:
   - stage: build
@@ -68,6 +69,33 @@ stages:
               databricks workspace mkdirs /Shared/pa_test_automation
               databricks workspace import_dir -o $(Pipeline.Workspace)/notebooks /Shared/pa_test_automation
             displayName: 'Upload notebooks to Azure Databricks'
+
+  - stage: deploy_datafactory
+    displayName: 'Deploy Azure DataFactory'
+    jobs:
+      - job: run_deploy_datafactory
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - checkout: none
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '3.7'
+            displayName: 'Use Python 3.7'
+          - download: current
+            artifact: adf_template
+          - bash: |
+              apt-get install azure-cli
+              az login --service-principal -u $(workspace_pricipal_id) -p $(workspace_principal_secret) --tenant $(TENANT_ID)
+              az account set --subscription $(SUBSCRIPTION_ID)
+              az group deployment create \
+                  --name $(Build.SourceVersion)
+                  --resource-group $(RESOURCE_GROUP) \
+                  --mode Incremental \
+                  --template-file $(Pipeline.Workspace)/adf_template/arm_template.json \
+                  --parameters @$(Pipeline.Workspace)/adf_template/arm_template_parameters.json \
+                  --parameters factoryName=infomart-sandbox-00
+            displayName: 'Install Azure CLI'
 
 #  - stage: deploy_datafactory
 #    displayName: 'Deploy Azure DataFactory'
