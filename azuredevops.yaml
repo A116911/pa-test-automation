@@ -20,8 +20,8 @@ stages:
             value: "$(Build.ArtifactStagingDirectory)"
         steps: 
           - bash: |
-              mkdir -p "$(buildDir)/notebooks"
-              find . -name '*.scala' | cpio -pdm $(buildDir)/notebooks/
+              mkdir -p "$(buildDir)/notebooks/pa_test_automation"
+              find . -name '*.scala' | cpio -pdm $(buildDir)/notebooks/pa_test_automation
             displayName: 'Prepare Notebook Build Artifacts'
           - bash: |
               mkdir -p "$(buildDir)/adf_template"
@@ -64,13 +64,7 @@ stages:
             displayName: 'Authenticate with Azure Databricks CLI'
 
           - bash: |
-              databricks workspace mkdirs /pa-test-automation
-              for nb in $(Pipeline.Workspace)/notebooks/*.scala
-              do
-                databricks workspace mkdirs "/pa-test-automation/${nb#$(Pipeline.Workspace)/notebooks/}"
-              	echo "Importing notebook - $nb"
-                databricks workspace import --language SCALA --format SOURCE --overwrite $nb "/pa-test-automation/${nb#$(Pipeline.Workspace)/notebooks/}"
-              done
+              databricks workspace import_dir -o $(Pipeline.Workspace)/notebooks
             displayName: 'Upload notebooks to Azure Databricks'
 
 #  - stage: deploy_datafactory
