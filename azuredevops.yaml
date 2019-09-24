@@ -82,7 +82,7 @@ stages:
             artifact: adf_template
           - bash: |
               sudo apt-get install -y azure-cli
-              az login --service-principal -u "$WORKSPACE_PRINCIPAL_ID" -p "$WORKSPACE_PRINCIPAL_SECRET" --tenant "$TENANT_ID"
+              az login --service-principal --u "$(workspace_principal_id)" --p "$(workspace_principal_secret)" --tenant $(TENANT_ID)
             displayName: 'Login with Azure CLI'
           - bash: az account set --subscription $(SUBSCRIPTION_ID)
             displayName: 'Setup Subscription'
