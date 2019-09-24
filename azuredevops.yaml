@@ -65,8 +65,8 @@ stages:
             displayName: 'Authenticate with Azure Databricks CLI'
 
           - bash: |
-              databricks workspace mkdirs /pa_test_automation
-              databricks workspace import_dir -o $(Pipeline.Workspace)/notebooks /pa_test_automation
+              databricks workspace mkdirs /Shared/pa_test_automation
+              databricks workspace import_dir -o $(Pipeline.Workspace)/notebooks /Shared/pa_test_automation
             displayName: 'Upload notebooks to Azure Databricks'
 
 #  - stage: deploy_datafactory
