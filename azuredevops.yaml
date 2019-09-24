@@ -4,6 +4,7 @@ trigger:
 variables:
   - name: AZURE_LOCATION
     value: australiasoutheast
+  - group: workspace-enterprise-data-app-dev
 
 stages:
   - stage: build
@@ -13,7 +14,6 @@ stages:
         pool:
           vmImage: 'ubuntu-latest'
         variables:
-          - group: "workspace-enterprise-data-app-dev"
           - name: NotebookName
             value: helloworld
           - name: buildDir
@@ -44,8 +44,6 @@ stages:
       - job: run_deploy
         pool:
           vmImage: 'ubuntu-latest'
-        variables:
-          - group: "workspace-enterprise-data-app-dev"
         steps:
           - download: current
             artifact: notebooks
@@ -81,8 +79,6 @@ stages:
 #      - job: run_deploy_datafactory
 #        pool:
 #          vmImage: 'Ubuntu 16.04'
-#        variables:
-#          - group: "workspace-enterprise-data-app-dev"
 #        steps:
 #          - download: current
 #            artifact: adf_template
