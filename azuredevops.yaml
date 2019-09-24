@@ -18,7 +18,7 @@ stages:
             value: helloworld
           - name: buildDir
             value: "$(Build.ArtifactStagingDirectory)"
-        steps: {
+        steps: 
           - bash: |
               mkdir -p "$(buildDir)/notebooks"
               find . -name '*.scala' | cpio -pdm $(buildDir)/notebooks/
