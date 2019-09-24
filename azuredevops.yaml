@@ -81,5 +81,13 @@ stages:
           - download: current
             artifact: adf_template
           - bash: |
-              az login --service-principal -u "$(workspace_pricipal_id)" -p "$(workspace_principal_secret)" --tenant "$(TENANT_ID)"
+              az login --service-principal -u $(workspace_principal_id) -p $(workspace_principal_secret) --tenant $(TENANT_ID)
+              az account set --subscription $(SUBSCRIPTION_ID)
+              az group deployment create \
+                  --name $(Build.SourceVersion) \
+                  --resource-group $(RESOURCE_GROUP) \
+                  --mode Incremental \
+                  --template-file $(Pipeline.Workspace)/adf_template/arm_template.json \
+                  --parameters @$(Pipeline.Workspace)/adf_template/arm_template_parameters.json \
+                  --parameters factoryName=infomart-sandbox-00
             displayName: 'Install Azure CLI'
