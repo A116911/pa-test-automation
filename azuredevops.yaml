@@ -78,10 +78,6 @@ stages:
           vmImage: 'ubuntu-latest'
         steps:
           - checkout: none
-          - task: UsePythonVersion@0
-            inputs:
-              versionSpec: '3.7'
-            displayName: 'Use Python 3.7'
           - download: current
             artifact: adf_template
           - bash: |
@@ -96,22 +92,3 @@ stages:
                   --parameters @$(Pipeline.Workspace)/adf_template/arm_template_parameters.json \
                   --parameters factoryName=infomart-sandbox-00
             displayName: 'Install Azure CLI'
-
-#  - stage: deploy_datafactory
-#    displayName: 'Deploy Azure DataFactory'
-#    jobs:
-#      - job: run_deploy_datafactory
-#        pool:
-#          vmImage: 'Ubuntu 16.04'
-#        steps:
-#          - download: current
-#            artifact: adf_template
-#          - task: AzureResourceGroupDeployment@2
-#            displayName: 'Azure DataFactory Deployment'
-#            inputs:
-#              azureSubscription: SUBSCRIPTION_SERVICE
-#              resourceGroupName: $(RESOURCE_GROUP)
-#              location: 'Australia East'
-#              csmFile: '$(Pipeline.Workspace)/adf_template/arm_template.json'
-#              csmParametersFile: '$(Pipeline.Workspace)/adf_template/arm_template_parameters.json'
-#              overrideParameters: '-factoryName "$(adf_name)" -storageLinkedService_connectionString "" -AzureSqlDW1_connectionString "" -ds_in_properties_typeProperties_fileName "input.txt" -ds_in_properties_typeProperties_folderPath "adfv2tutorial/input" -ds_out_properties_typeProperties_folderPath "adfv2tutorial/output"'
