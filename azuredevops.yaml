@@ -80,13 +80,9 @@ stages:
           - checkout: none
           - download: current
             artifact: adf_template
-          - bash: |
-              az login --service-principal -u $(workspace_principal_id) -p $(workspace_principal_secret) --tenant $(TENANT_ID)
-              echo "done"
+          - bash: az login --service-principal -u $(workspace_principal_id) -p $(workspace_principal_secret) --tenant $(TENANT_ID)
             displayName: 'Login with Azure CLI'
-          - bash: |              
-              az account set --subscription $(SUBSCRIPTION_ID)
-            displayName: 'Set SUBSCRIPTION_ID'              
-          - bash: |              
-              az group deployment create --name $(Build.SourceVersion) --resource-group $(RESOURCE_GROUP) --mode Incremental --template-file $(Pipeline.Workspace)/adf_template/arm_template.json --parameters $(Pipeline.Workspace)/adf_template/arm_template_parameters.json --parameters factoryName=infomart-sandbox-00
-            displayName: 'Deploy ADF Template'
+          - bash: az account set --subscription $(SUBSCRIPTION_ID)
+            displayName: 'Setup Subscription'
+          - bash: az group deployment create --name $(Build.SourceVersion) --resource-group $(RESOURCE_GROUP) --mode Incremental --template-file $(Pipeline.Workspace)/adf_template/arm_template.json --parameters $(Pipeline.Workspace)/adf_template/arm_template_parameters.json --parameters factoryName=infomart-sandbox-00
+            displayName: 'Uploading ARM template'
