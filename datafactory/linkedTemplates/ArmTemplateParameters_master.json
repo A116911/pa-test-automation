@@ -1,0 +1,30 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "factoryName": {
+            "value": "sfaz-df1"
+        },
+        "storageLinkedService_connectionString": {
+            "value": ""
+        },
+        "AzureSqlDW1_connectionString": {
+            "value": ""
+        },
+        "ds_in_properties_typeProperties_fileName": {
+            "value": "input.txt"
+        },
+        "ds_in_properties_typeProperties_folderPath": {
+            "value": "adfv2tutorial/input"
+        },
+        "ds_out_properties_typeProperties_folderPath": {
+            "value": "adfv2tutorial/output"
+        },
+        "containerUri": {
+            "value": ""
+        },
+        "containerSasToken": {
+            "value": ""
+        }
+    }
+}

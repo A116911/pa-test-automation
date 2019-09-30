@@ -1,0 +1,77 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "factoryName": {
+            "type": "string",
+            "metadata": "Data Factory Name",
+            "defaultValue": "sfaz-df1"
+        },
+        "storageLinkedService_connectionString": {
+            "type": "secureString",
+            "metadata": "Secure string for 'connectionString' of 'storageLinkedService'"
+        },
+        "AzureSqlDW1_connectionString": {
+            "type": "secureString",
+            "metadata": "Secure string for 'connectionString' of 'AzureSqlDW1'"
+        },
+        "ds_in_properties_typeProperties_fileName": {
+            "type": "string",
+            "defaultValue": "input.txt"
+        },
+        "ds_in_properties_typeProperties_folderPath": {
+            "type": "string",
+            "defaultValue": "adfv2tutorial/input"
+        },
+        "ds_out_properties_typeProperties_folderPath": {
+            "type": "string",
+            "defaultValue": "adfv2tutorial/output"
+        },
+        "containerUri": {
+            "type": "string",
+            "metadata": "URI to storage account containing linked ARM templates"
+        },
+        "containerSasToken": {
+            "type": "string",
+            "metadata": "Sas Token to storage account containing linked ARM templates"
+        }
+    },
+    "variables": {
+        "factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+    },
+    "resources": [
+        {
+            "name": "ArmTemplate_0",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2018-02-01",
+            "properties": {
+                "mode": "incremental",
+                "templateLink": {
+                    "uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "factoryName": {
+                        "value": "[parameters('factoryName')]"
+                    },
+                    "storageLinkedService_connectionString": {
+                        "value": "[parameters('storageLinkedService_connectionString')]"
+                    },
+                    "AzureSqlDW1_connectionString": {
+                        "value": "[parameters('AzureSqlDW1_connectionString')]"
+                    },
+                    "ds_in_properties_typeProperties_fileName": {
+                        "value": "[parameters('ds_in_properties_typeProperties_fileName')]"
+                    },
+                    "ds_in_properties_typeProperties_folderPath": {
+                        "value": "[parameters('ds_in_properties_typeProperties_folderPath')]"
+                    },
+                    "ds_out_properties_typeProperties_folderPath": {
+                        "value": "[parameters('ds_out_properties_typeProperties_folderPath')]"
+                    }
+                }
+            },
+            "dependsOn": []
+        }
+    ]
+}
