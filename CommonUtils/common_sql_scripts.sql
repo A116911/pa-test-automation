@@ -8,9 +8,11 @@ WHERE isc.table_name like '%hub_CRM_TransactionHeaderGuid%';
 
 
 --Query to get staging table names with schema name
-select --concat(ssc.name, '.', st.name)
-concat('drop table ', ssc.name, '.', st.name, ';')
---string_agg(concat('select * from ', ssc.name, '.', st.name, ' union all '),'') as schema_table
+select 
+--concat(ssc.name, '.', st.name)
+--concat('select distinct ds_update_ts from ', ssc.name, '.', st.name, ';')
+--concat('drop table ', ssc.name, '.', st.name, ';')
+string_agg(concat('select * from ', ssc.name, '.', st.name, ' union all '),'') as schema_table
 from sys.tables as st 
 	inner join sys.objects so
 	on st.object_id = so.object_id
@@ -18,5 +20,5 @@ from sys.tables as st
 	on ssc.schema_id = st.schema_id
 where
 ssc.name = 'staging' and --@STAGINGSCHEMANAME and
-st.name like ('%stg_isu_adrc[_]%');
+st.name like ('%stg_isu_ever%');
 

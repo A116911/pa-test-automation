@@ -18,7 +18,7 @@ link.Staging_Table_Name like '%stg_isu_adrc%';
 --Query to get satellite tables for hub_link_reference
 select distinct sat.Target_Table_Name, sat.Staging_Table_Name, sat.Hub_Or_Link_Reference from [dbo].[DG_Mapping_Sat] sat
 where sat.Target_Table_Name in 
-('sat_ISU_ConnectionObjectLocationAddress');
+('sat_ISU_ContractInstallation');
 
 sat.Staging_Table_Name = 'stg_isu_eanlh' and
 sat.Target_Column_Name in 
@@ -42,14 +42,14 @@ select distinct hub.Target_Table_Schema,hub.Target_Table_Name from [dbo].[DG_Map
 ) hublink_tar_schema_table
 where 
 sat.Hub_Or_Link_Reference = hublink_tar_schema_table.Target_Table_Name and
---sat.Staging_Table_Name like '%stg_isu_evbs' and
-sat.Target_Table_Name = 'sat_ISU_ConnectionObjectPremise';
+sat.Staging_Table_Name like '%stg_isu_ever' and
+sat.Target_Table_Name = 'sat_ISU_Operand';
 
 
 --Query to get satellite field names (comma separated)
 select 
 --distinct sat.Staging_Table_Name,sat.Target_Table_Schema,sat.Target_Table_Name, sat.Hub_Or_Link_Reference, 
-sat.Source_Field_Name,sat.Target_Column_Name
+sat.Staging_Table_Name, sat.Source_Field_Name,sat.Target_Column_Name
 --string_agg(sat.Target_Column_Name,',')
 from [dbo].[DG_Mapping_Sat] sat,
 (select distinct link.Target_Table_Schema,link.Target_Table_Name from [dbo].[DG_Mapping_Links] link
@@ -61,8 +61,10 @@ select distinct hub.Target_Table_Schema,hub.Target_Table_Name from [dbo].[DG_Map
 where 
 sat.Hub_Or_Link_Reference = hublink_tar_schema_table.Target_Table_Name and
 --sat.Staging_Table_Name like '%stg_isu_evbs'
-sat.Target_Table_Name = 'sat_ISU_ConnectionObjectPremise';
+sat.Target_Table_Name = 'sat_ISU_ContractInstallation'
+and sat.Source_Field_Name = 'ZZCHILDRENS';
 order by sat.Target_Column_Name;
 
 
-
+select top 2 * from [dbo].[DG_Mapping_Ref]
+where Target_Table_Name like '%ref_RateSteps%';
