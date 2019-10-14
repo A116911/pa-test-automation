@@ -1,0 +1,6 @@
+timeStamp,elapsed,label,responseCode,responseMessage,threadName,dataType,success,failureMessage,bytes,sentBytes,grpThreads,allThreads,URL,Latency,IdleTime,Connect
+1571017876192,393,Test fact_ContractOtherCharges,200,OK,JDBCUsers 1-4,text,true,,10,0,5,5,null,393,0,1
+1571017876871,301,Test fact_ContractOtherCharges,200,OK,JDBCUsers 1-5,text,true,,10,0,4,4,null,301,0,0
+1571017876976,622,Test fact_ContractOtherCharges,200,OK,JDBCUsers 1-1,text,true,,10,0,3,3,null,622,0,0
+1571017877163,517,Test fact_ContractOtherCharges,200,OK,JDBCUsers 1-2,text,true,,10,0,2,2,null,517,0,0
+1571017877088,685,Test fact_ContractOtherCharges,200,OK,JDBCUsers 1-3,text,true,,10,0,1,1,null,685,0,0

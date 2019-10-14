@@ -1,0 +1,6 @@
+KPI:
+Response time, hit number, error per sec
+
+https://loadium.com/blog/defining-kpis-in-performance-testing/
+
+

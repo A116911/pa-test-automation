@@ -20,5 +20,6 @@ from sys.tables as st
 	on ssc.schema_id = st.schema_id
 where
 ssc.name = 'staging' and --@STAGINGSCHEMANAME and
-st.name like ('%stg_isu_ever%');
+st.name like ('%stg_isu_fkkmako%');
+
 

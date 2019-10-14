@@ -1,4 +1,4 @@
-/****** Object:  StoredProcedure [staging].[validate_contract_discount_history]    Script Date: 26/09/2019 12:41:59 PM ******/
+/****** Object:  StoredProcedure [staging].[validate_contract_discount_history]    Script Date: 1/10/2019 4:32:47 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -24,7 +24,7 @@ BEGIN
 										DiscountValueType,
 										DiscountDescription,
 										DiscountValue
-									from staging.TMPAUTO_CONTRACTINSTALLATION_DISCOUNT )'
+									from staging.TMPAUTO_CONTRACTINSTALLATION_DISCOUNT)'
 									
 		SET @CONTRACTDISCOUNTHISTDIMQUERY = '(select 
 										Contract,
@@ -171,7 +171,9 @@ BEGIN
 					FROM
 					staging.TMPAUTO_JOIN_CONTRACT_INSTALLATION contract_instal
 					INNER JOIN staging.TMPAUTO_DISCOUNT_CODES dis_codes
-					ON contract_instal.OPERANDCODE = dis_codes.DiscountOperand				
+					ON contract_instal.OPERANDCODE = dis_codes.DiscountOperand
+					where contract_instal.DiscountValue <> '0.000000' and
+					contract_instal.DiscountValue is not null
 				
 		
 		
